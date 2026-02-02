@@ -4,7 +4,7 @@
     <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questify - Expressive Bunny Edition</title>
+    <title>Questify - Background Timer Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -109,7 +109,7 @@
                     <button onclick="confirmTheme(false)" class="bg-slate-400 text-white px-3 py-1 rounded-lg text-xs font-black">NO</button>
                 </div>
             </div>
-            <p class="font-bold text-sm" id="mascotText">Welcome back! I'm so ready to help you succeed! ✨</p>
+            <p class="font-bold text-sm" id="mascotText">Welcome back! I'm ready to grind! ✨</p>
             <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-2 border-l-2 border-slate-100 rotate-45"></div>
         </div>
     </div>
@@ -133,24 +133,32 @@
     </footer>
 
     <script>
-        let state = { coins: 0, tickets: 0, gameSeconds: 0, isTimerActive: false, tasks: [], isDark: false };
+        // --- CORE STATE ---
+        let state = { 
+            coins: 0, 
+            tickets: 0, 
+            gameSeconds: 0, 
+            isTimerActive: false, 
+            endTime: null, // Critical for background tracking
+            tasks: [], 
+            isDark: false 
+        };
         let pendingTheme = null;
 
-        const FACES = {
-            normal: "🐰",
-            happy: "🥳",
-            thinking: "🤔",
-            disappointed: "🤨",
-            angry: "💢",
-            blink: "✨🐰"
-        };
-
+        // --- ASSETS ---
+        const FACES = { normal: "🐰", happy: "🥳", thinking: "🤔", disappointed: "🤨", angry: "💢" };
         const sounds = {
             add: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
             done: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
             error: new Audio('https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'),
-            buy: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3')
+            buy: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
+            alarm: new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3')
         };
+
+        // --- BACKGROUND PERSISTENCE HACK ---
+        // A silent audio loop prevents iOS/Android from "freezing" the JS execution
+        const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+        silentAudio.loop = true;
 
         const DIALOGUES = {
             legendary: ["WHOA! A Legendary Quest?! ⚔️", "This is huge! You're a hero! 💪"],
@@ -164,6 +172,7 @@
             lightToggle: ["Bright and early! ☀️", "Let there be light! ✨"]
         };
 
+        // --- CORE FUNCTIONS ---
         function speak(type, face = 'normal') {
             const list = DIALOGUES[type];
             document.getElementById('mascotText').innerText = list[Math.floor(Math.random() * list.length)];
@@ -171,34 +180,13 @@
             if(face !== 'normal') setTimeout(() => document.getElementById('bunnyFace').innerText = FACES.normal, 3000);
         }
 
-        function checkSecretCommand(input) {
-            const btn = document.getElementById('resetBtn');
-            btn.style.display = (input.value.toLowerCase() === 'reset') ? 'block' : 'none';
-        }
-
-        function triggerReset() {
-            if (confirm("Oh no! All your progress will be lost! 🥺")) { 
-                localStorage.clear(); 
-                location.reload(); 
-            }
-        }
-
         function addTask() {
             const input = document.getElementById('taskInput');
             const text = input.value.trim().toLowerCase();
             if (!text || text === 'reset') return;
 
-            // Check for Theme Commands
-            if (text === 'dark' || text === 'dark mode') {
-                promptTheme(true);
-                input.value = '';
-                return;
-            }
-            if (text === 'light' || text === 'light mode') {
-                promptTheme(false);
-                input.value = '';
-                return;
-            }
+            if (text === 'dark' || text === 'dark mode') { promptTheme(true); input.value = ''; return; }
+            if (text === 'light' || text === 'light mode') { promptTheme(false); input.value = ''; return; }
 
             if (isJibberish(text)) {
                 sounds.error.play();
@@ -217,6 +205,72 @@
             speak(eval.tier.toLowerCase(), eval.tier === 'ANGRY' ? 'angry' : 'normal');
         }
 
+        function evaluateTask(text) {
+            if (text.includes('video game') || text.includes('play')) return { reward: 0, tier: "ANGRY", color: "text-red-600", bg: "bg-red-50" };
+            const highEffort = ['exam', 'study', 'clean', 'workout', 'gym', 'run', 'homework', 'project', 'coding', 'math', 'work'];
+            if (highEffort.some(word => text.includes(word))) return { reward: Math.floor(Math.random() * 201) + 800, tier: "LEGENDARY", color: "text-sky-600", bg: "bg-sky-50" };
+            return { reward: Math.floor(Math.random() * 201) + 100, tier: "COMMON", color: "text-slate-500", bg: "bg-slate-100" };
+        }
+
+        // --- TIMER LOGIC (WITH BACKGROUND FIX) ---
+        function toggleTimer() {
+            if (state.gameSeconds <= 0 && !state.isTimerActive) return;
+
+            state.isTimerActive = !state.isTimerActive;
+
+            if (state.isTimerActive) {
+                // Calculate future timestamp
+                state.endTime = Date.now() + (state.gameSeconds * 1000);
+                silentAudio.play().catch(() => console.log("Silent audio requires interaction first."));
+            } else {
+                // Save remaining seconds
+                state.gameSeconds = Math.max(0, Math.floor((state.endTime - Date.now()) / 1000));
+                state.endTime = null;
+                silentAudio.pause();
+                updateLockscreen("Timer Paused");
+            }
+            
+            updateUI();
+            saveData();
+        }
+
+        function updateLockscreen(timeStr) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: `Questify: ${timeStr}`,
+                    artist: 'Stay Focused! 🎮',
+                    album: 'Game Session Active',
+                    artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/3073/3073458.png', sizes: '512x512', type: 'image/png' }]
+                });
+            }
+        }
+
+        setInterval(() => {
+            if (state.isTimerActive && state.endTime) {
+                const now = Date.now();
+                const remaining = Math.max(0, Math.floor((state.endTime - now) / 1000));
+
+                const h = Math.floor(remaining / 3600).toString().padStart(2, '0');
+                const m = Math.floor((remaining % 3600) / 60).toString().padStart(2, '0');
+                const s = (remaining % 60).toString().padStart(2, '0');
+                const timeStr = `${h}:${m}:${s}`;
+
+                document.getElementById('timerDisplay').innerText = timeStr;
+                updateLockscreen(timeStr);
+
+                if (remaining <= 0) {
+                    state.isTimerActive = false;
+                    state.gameSeconds = 0;
+                    state.endTime = null;
+                    silentAudio.pause();
+                    sounds.alarm.play();
+                    updateUI();
+                    alert("Game time is over! Back to quests! 🐰");
+                }
+            }
+        }, 1000);
+
+        // --- THEME & UI ---
         function promptTheme(dark) {
             pendingTheme = dark;
             document.getElementById('confirmationBox').classList.remove('hidden');
@@ -229,69 +283,13 @@
             if (yes) {
                 state.isDark = pendingTheme;
                 applyTheme();
-                speak(state.isDark ? 'darkToggle' : 'lightToggle', 'happy');
                 saveData();
-            } else {
-                speak('common', 'normal');
+                speak(state.isDark ? 'darkToggle' : 'lightToggle', 'happy');
             }
             pendingTheme = null;
         }
 
-        function applyTheme() {
-            document.body.classList.toggle('dark-mode', state.isDark);
-        }
-
-        function isJibberish(text) {
-            if (text.length < 3) return true;
-            if (!/[aeiouy]/.test(text)) return true;
-            if (/(.)\1{2,}/.test(text)) return true;
-            return false;
-        }
-
-        function evaluateTask(text) {
-            if (text.includes('video game') || text.includes('play')) return { reward: 0, tier: "ANGRY", color: "text-red-600", bg: "bg-red-50" };
-            const highEffort = ['exam', 'study', 'clean', 'workout', 'gym', 'run', 'homework', 'project', 'coding', 'math', 'work'];
-            if (highEffort.some(word => text.includes(word))) return { reward: Math.floor(Math.random() * 201) + 800, tier: "LEGENDARY", color: "text-sky-600", bg: "bg-sky-50" };
-            return { reward: Math.floor(Math.random() * 201) + 100, tier: "COMMON", color: "text-slate-500", bg: "bg-slate-100" };
-        }
-
-        function completeTask(id, reward) {
-            state.coins += reward;
-            state.tasks = state.tasks.filter(t => t.id !== id);
-            sounds.done.play();
-            speak('complete', 'happy');
-            updateUI();
-            renderQuests();
-            saveData();
-        }
-
-        function buyTicket() {
-            if (state.coins >= 1000) {
-                state.coins -= 1000; state.tickets++;
-                sounds.buy.play(); 
-                speak('complete', 'happy');
-                updateUI(); saveData();
-            } else {
-                document.getElementById('mascotText').innerText = "Not enough coins! 🪙";
-                document.getElementById('bunnyFace').innerText = FACES.disappointed;
-                sounds.error.play();
-            }
-        }
-
-        function useTicket() {
-            if (state.tickets > 0) {
-                state.tickets--; state.gameSeconds += 3600;
-                sounds.buy.play(); 
-                document.getElementById('mascotText').innerText = "One hour added! Go play! 🎮";
-                updateUI(); saveData();
-            }
-        }
-
-        function toggleTimer() {
-            if (state.gameSeconds <= 0 && !state.isTimerActive) return;
-            state.isTimerActive = !state.isTimerActive;
-            updateUI();
-        }
+        function applyTheme() { document.body.classList.toggle('dark-mode', state.isDark); }
 
         function renderQuests() {
             const list = document.getElementById('questList');
@@ -316,31 +314,77 @@
             document.getElementById('ticketDisplay').innerText = state.tickets;
             const btn = document.getElementById('toggleBtn');
             btn.className = state.isTimerActive ? "duo-btn bg-sky-500 border-sky-700 p-4 rounded-full text-white" : "duo-btn bg-white border-slate-200 p-4 rounded-full shadow-md text-slate-800";
-        }
-
-        setInterval(() => {
-            if (state.isTimerActive && state.gameSeconds > 0) {
-                state.gameSeconds--;
+            
+            // Re-render timer display manually if paused
+            if(!state.isTimerActive) {
                 const h = Math.floor(state.gameSeconds / 3600).toString().padStart(2, '0');
                 const m = Math.floor((state.gameSeconds % 3600) / 60).toString().padStart(2, '0');
                 const s = (state.gameSeconds % 60).toString().padStart(2, '0');
                 document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
-                if (state.gameSeconds <= 0) {
-                    state.isTimerActive = false;
-                    updateUI();
-                }
             }
-        }, 1000);
+        }
 
-        function saveData() { localStorage.setItem('questifyData_v2', JSON.stringify(state)); }
+        // --- DATA MANAGEMENT ---
+        function completeTask(id, reward) {
+            state.coins += reward;
+            state.tasks = state.tasks.filter(t => t.id !== id);
+            sounds.done.play();
+            speak('complete', 'happy');
+            updateUI(); renderQuests(); saveData();
+        }
+
+        function buyTicket() {
+            if (state.coins >= 1000) {
+                state.coins -= 1000; state.tickets++;
+                sounds.buy.play(); updateUI(); saveData();
+            } else {
+                speak('common', 'disappointed');
+            }
+        }
+
+        function useTicket() {
+            if (state.tickets > 0) {
+                state.tickets--; 
+                if (state.isTimerActive) {
+                    state.endTime += 3600000; // Add 1 hour to end timestamp
+                } else {
+                    state.gameSeconds += 3600;
+                }
+                sounds.buy.play(); updateUI(); saveData();
+            }
+        }
+
+        function isJibberish(text) {
+            if (text.length < 3) return true;
+            if (!/[aeiouy]/.test(text)) return true;
+            return false;
+        }
+
+        function checkSecretCommand(input) {
+            document.getElementById('resetBtn').style.display = (input.value.toLowerCase() === 'reset') ? 'block' : 'none';
+        }
+
+        function triggerReset() {
+            if (confirm("Reset all progress? 🥺")) { localStorage.clear(); location.reload(); }
+        }
+
+        function saveData() { localStorage.setItem('questifyData_v3', JSON.stringify(state)); }
+
         function loadData() {
-            const saved = localStorage.getItem('questifyData_v2');
+            const saved = localStorage.getItem('questifyData_v3');
             if (saved) { 
                 state = JSON.parse(saved); 
-                state.isTimerActive = false; 
-                applyTheme();
-                renderQuests(); 
-                updateUI(); 
+                // Recalculate background drift on load
+                if (state.isTimerActive && state.endTime) {
+                    const remaining = Math.floor((state.endTime - Date.now()) / 1000);
+                    if (remaining <= 0) {
+                        state.isTimerActive = false;
+                        state.gameSeconds = 0;
+                    }
+                } else {
+                    state.isTimerActive = false;
+                }
+                applyTheme(); renderQuests(); updateUI(); 
             }
         }
         window.onload = loadData;
