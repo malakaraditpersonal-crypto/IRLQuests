@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="manifest.json">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Mascot: 'I'm ready for offline quests!' 🐰✨"));
+  }
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questify - Sentient Bunny Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-flow-1: #f0f9ff;
+            --bg-flow-2: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --text-main: #334155;
+        }
+
+        .dark-mode {
+            --bg-flow-1: #0f172a;
+            --bg-flow-2: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-main: #f1f5f9;
+        }
+
+        @keyframes flow {
+            0% { background-color: var(--bg-flow-1); }
+            50% { background-color: var(--bg-flow-2); }
+            100% { background-color: var(--bg-flow-1); }
+        }
+
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            animation: flow 20s ease-in-out infinite;
+            color: var(--text-main);
+            transition: color 0.3s ease;
+        }
+        
+        .duo-btn {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom-width: 5px;
+            position: relative;
+        }
+
+        .duo-btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
+        .duo-btn:active { transform: translateY(4px); border-bottom-width: 0px; margin-bottom: 5px; }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease;
+        }
+
+        @keyframes hop {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .hop { animation: hop 2s infinite ease-in-out; }
+
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        #resetBtn { position: fixed; top: 20px; left: 20px; z-index: 1000; display: none; }
+    </style>
+</head>
+<body class="flex flex-col items-center p-4 min-h-screen">
+
+    <button id="resetBtn" onclick="triggerReset()" class="duo-btn bg-red-500 border-red-700 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-xl">
+        Reset Progress ⚠️
+    </button>
+
+    <button id="themeToggle" onclick="toggleTheme()" class="fixed bottom-6 right-6 z-50 duo-btn bg-slate-800 border-slate-900 text-white p-4 rounded-full text-xl shadow-2xl">
+        🌙
+    </button>
+
+    <header class="w-full max-w-md glass-card rounded-3xl p-5 mb-10 flex justify-around items-center sticky top-4 z-50 shadow-lg">
+        <div class="text-center">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">coins</p>
+            <p class="text-xl font-black text-amber-500" id="coinDisplay">🪙 0</p>
+        </div>
+        <div class="text-center">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tickets</p>
+            <p class="text-xl font-black text-sky-500" id="ticketDisplay">🎟️ 0</p>
+        </div>
+        <div class="text-center">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Timer</p>
+            <p class="text-xl font-black text-teal-500" id="timerDisplay">00:00:00</p>
+        </div>
+    </header>
+
+    <div id="heroMascot" class="flex flex-col items-center mb-8">
+        <div id="bunnyFace" class="text-8xl mb-4 drop-shadow-xl hop cursor-pointer" onclick="interactMascot()">🐰</div>
+        <div class="glass-card border-2 border-slate-100 rounded-2xl p-4 relative shadow-xl max-w-[280px] text-center">
+            <p class="font-bold text-sm" id="mascotText">Welcome back! I'm so ready to help you succeed! ✨</p>
+            <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-2 border-l-2 border-slate-100 rotate-45"></div>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md mb-10">
+        <div class="flex gap-3 glass-card p-2 rounded-[2rem] shadow-xl">
+            <input type="text" id="taskInput" oninput="checkSecretCommand(this)" onkeydown="if(event.key==='Enter') addTask()" placeholder="What is your quest?" class="bg-transparent flex-1 p-4 rounded-2xl focus:outline-none font-bold placeholder:text-slate-400">
+            <button onclick="addTask()" class="duo-btn bg-teal-500 border-teal-700 text-white px-8 rounded-2xl font-black uppercase">Add</button>
+        </div>
+    </div>
+
+    <div id="questList" class="w-full max-w-md space-y-4 mb-32"></div>
+
+    <footer class="fixed bottom-0 w-full max-w-md glass-card border-t-2 border-white/20 p-6 flex gap-4 rounded-t-[3rem] z-40 shadow-2xl">
+        <button onclick="buyTicket()" class="flex-1 duo-btn bg-amber-400 border-amber-600 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Buy Ticket<br><span class="opacity-80">1000 Coins</span></button>
+        <button id="toggleBtn" onclick="toggleTimer()" class="duo-btn bg-white border-slate-200 p-4 rounded-full text-xl shadow-md text-slate-800">🎮</button>
+        <button onclick="useTicket()" class="flex-1 duo-btn bg-sky-500 border-sky-700 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Use Ticket<br><span class="opacity-80">+1 HR Time</span></button>
+    </footer>
+
+    <script>
+        let state = { coins: 0, tickets: 0, gameSeconds: 0, isTimerActive: false, tasks: [], isDark: false };
+        
+        const sounds = {
+            add: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+            done: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+            error: new Audio('https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'),
+            buy: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3')
+        };
+
+        const DIALOGUES = {
+            legendary: ["WHOA! A Legendary Quest?! You're a hero! ⚔️", "This looks tough, but you're tougher! 💪", "I'll be cheering the loudest for this one! ✨"],
+            rare: ["Ooh, a challenge! I like it! 🌟", "You're stepping up your game! 🥕", "Success is just a few steps away!"],
+            common: ["Steady progress is the best progress! 👍", "One more quest for the books!", "Let's get this done quickly! 🏃‍♂️"],
+            angry: ["*Gasp* No rewards for video games! Get back to work! 💢", "My bunny ears twitch with disappointment... No coins! 🛑", "Questify says: Work first, play later! 🙅‍♂️"],
+            jibberish: ["Huh? I don't speak 'keyboard-mash'! 🤨", "Is that a secret code? Use real words! 📜", "My brain is fuzzy... what does that mean? 😵‍💫"],
+            complete: ["VICTORY! You did it! 🎉", "Cha-ching! Look at those coins! 🪙", "You're unstoppable today! ✨", "One step closer to greatness!"],
+            buy: ["Enjoy your ticket! You earned it! 🎟️", "Spending wisely, I see! 💰", "Tickets are the gateway to fun!"],
+            noMoney: ["Oh no, friend! You need more coins! 🪙", "Maybe one more quest before we shop? 🥕", "Savings are a bit low for that! 📉"],
+            timerStart: ["Game on! Enjoy your break! 🎮", "Timer's ticking! Have fun! ✨", "Relax time! You deserved this!"],
+            timerStop: ["Back to reality! Let's do this! 💼", "Pause! Ready for more quests?", "Break's over, let's keep the momentum!"],
+            darkToggle: ["Going stealth mode? I like it! 🌙", "Ah, much easier on the eyes! ✨", "Let's work in the shadows! 🌑"]
+        };
+
+        function speak(type) {
+            const list = DIALOGUES[type];
+            document.getElementById('mascotText').innerText = list[Math.floor(Math.random() * list.length)];
+        }
+
+        function toggleTheme() {
+            state.isDark = !state.isDark;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('themeToggle').innerText = state.isDark ? '☀️' : '🌙';
+            speak('darkToggle');
+            saveData();
+        }
+
+        function checkSecretCommand(input) {
+            const btn = document.getElementById('resetBtn');
+            btn.style.display = (input.value.toLowerCase() === 'reset') ? 'block' : 'none';
+        }
+
+        function triggerReset() {
+            const response = confirm("Oh no! My friend, are you sure? All your progress will be lost! 🥺");
+            if (response) { localStorage.clear(); location.reload(); }
+        }
+
+        function interactMascot() {
+            const quotes = ["I believe in you!", "Doing great!", "Let's finish quests!", "Proud of you! 💖", "Did you know you're awesome?"];
+            document.getElementById('mascotText').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        function isJibberish(text) {
+            const input = text.trim().toLowerCase();
+            if (input.length < 3) return true;
+            if (!/[aeiouy]/.test(input)) return true;
+            if (/(.)\1{2,}/.test(input)) return true;
+            if (/[bcdfghjklmnpqrstvwxz]{5,}/.test(input)) return true;
+            return false;
+        }
+
+        function evaluateTask(text) {
+            const input = text.toLowerCase();
+            if (input.includes('video game') || input.includes('play')) return { reward: 0, tier: "ANGRY", color: "text-red-600", bg: "bg-red-50" };
+            const highEffort = ['exam', 'study', 'clean', 'workout', 'gym', 'run', 'homework', 'project', 'coding', 'math', 'work'];
+            const medEffort = ['laundry', 'cook', 'organize', 'practice', 'write', 'read'];
+            if (highEffort.some(word => input.includes(word))) return { reward: Math.floor(Math.random() * 201) + 800, tier: "LEGENDARY", color: "text-sky-600", bg: "bg-sky-50" };
+            if (medEffort.some(word => input.includes(word))) return { reward: Math.floor(Math.random() * 301) + 400, tier: "RARE", color: "text-teal-600", bg: "bg-teal-50" };
+            return { reward: Math.floor(Math.random() * 201) + 100, tier: "COMMON", color: "text-slate-500", bg: "bg-slate-100" };
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            if (!text || text.toLowerCase() === 'reset') return;
+
+            if (isJibberish(text)) {
+                sounds.error.play();
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 400);
+                speak('jibberish');
+                return;
+            }
+
+            const eval = evaluateTask(text);
+            state.tasks.push({ id: Date.now(), text, ...eval });
+            sounds.add.play();
+            input.value = '';
+            document.getElementById('resetBtn').style.display = 'none';
+            renderQuests();
+            saveData();
+            speak(eval.tier.toLowerCase());
+        }
+
+        function completeTask(id, reward) {
+            state.coins += reward;
+            state.tasks = state.tasks.filter(t => t.id !== id);
+            sounds.done.play();
+            speak('complete');
+            updateUI();
+            renderQuests();
+            saveData();
+        }
+
+        function buyTicket() {
+            if (state.coins >= 1000) {
+                state.coins -= 1000; state.tickets++;
+                sounds.buy.play(); 
+                speak('buy');
+                updateUI(); saveData();
+            } else {
+                speak('noMoney');
+                sounds.error.play();
+            }
+        }
+
+        function useTicket() {
+            if (state.tickets > 0) {
+                state.tickets--; state.gameSeconds += 3600;
+                sounds.buy.play(); 
+                document.getElementById('mascotText').innerText = "One hour added! Go play! 🎮";
+                updateUI(); saveData();
+            } else {
+                document.getElementById('mascotText').innerText = "You need a ticket first! 🎟️";
+            }
+        }
+
+        function toggleTimer() {
+            if (state.gameSeconds <= 0 && !state.isTimerActive) return;
+            state.isTimerActive = !state.isTimerActive;
+            speak(state.isTimerActive ? 'timerStart' : 'timerStop');
+            updateUI();
+        }
+
+        function renderQuests() {
+            const list = document.getElementById('questList');
+            list.innerHTML = '';
+            state.tasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = `glass-card border-2 ${task.reward === 0 ? 'border-red-500/50' : 'border-white/10'} p-5 rounded-3xl flex justify-between items-center shadow-sm`;
+                card.innerHTML = `
+                    <div class="max-w-[70%]">
+                        <span class="${task.bg} ${task.color} text-[8px] px-2 py-0.5 rounded-full font-black uppercase border border-current tracking-widest">${task.tier}</span>
+                        <p class="font-black text-sm mt-1 uppercase break-words">${task.text}</p>
+                        <p class="text-xs font-bold ${task.reward === 0 ? 'text-red-400' : 'text-amber-500'}">🪙 ${task.reward}</p>
+                    </div>
+                    <button onclick="completeTask(${task.id}, ${task.reward})" class="duo-btn ${task.reward === 0 ? 'bg-red-400 border-red-600' : 'bg-teal-400 border-teal-600'} text-white px-5 py-2 rounded-xl font-black text-xs uppercase shrink-0">DONE</button>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('coinDisplay').innerText = "🪙 " + state.coins;
+            document.getElementById('ticketDisplay').innerText = "🎟️ " + state.tickets;
+            const btn = document.getElementById('toggleBtn');
+            btn.className = state.isTimerActive ? "duo-btn bg-sky-500 border-sky-700 p-4 rounded-full text-white" : "duo-btn bg-white border-slate-200 p-4 rounded-full shadow-md text-slate-800";
+        }
+
+        setInterval(() => {
+            if (state.isTimerActive && state.gameSeconds > 0) {
+                state.gameSeconds--;
+                const h = Math.floor(state.gameSeconds / 3600).toString().padStart(2, '0');
+                const m = Math.floor((state.gameSeconds % 3600) / 60).toString().padStart(2, '0');
+                const s = (state.gameSeconds % 60).toString().padStart(2, '0');
+                document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
+                if (state.gameSeconds <= 0) {
+                    state.isTimerActive = false;
+                    speak('timerStop');
+                    updateUI();
+                }
+            }
+        }, 1000);
+
+        function saveData() { localStorage.setItem('questifyData', JSON.stringify(state)); }
+        function loadData() {
+            const saved = localStorage.getItem('questifyData');
+            if (saved) { 
+                state = JSON.parse(saved); 
+                state.isTimerActive = false; 
+                if(state.isDark) document.body.classList.add('dark-mode');
+                renderQuests(); 
+                updateUI(); 
+            }
+        }
+        window.onload = loadData;
+        
+    </script>
+</body>
+</html>
