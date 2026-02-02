@@ -2,16 +2,9 @@
 <html lang="en">
 <head>
     <link rel="manifest" href="manifest.json">
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("Mascot: 'I'm ready for offline quests!' 🐰✨"));
-  }
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questify - Sentient Bunny Edition</title>
+    <title>Questify - Expressive Bunny Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -20,6 +13,7 @@
             --bg-flow-2: #f8fafc;
             --card-bg: rgba(255, 255, 255, 0.8);
             --text-main: #334155;
+            --accent: #0ea5e9;
         }
 
         .dark-mode {
@@ -27,6 +21,7 @@
             --bg-flow-2: #1e293b;
             --card-bg: rgba(30, 41, 59, 0.8);
             --text-main: #f1f5f9;
+            --accent: #38bdf8;
         }
 
         @keyframes flow {
@@ -55,7 +50,6 @@
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: background 0.3s ease;
         }
 
         @keyframes hop {
@@ -73,6 +67,9 @@
         }
 
         #resetBtn { position: fixed; top: 20px; left: 20px; z-index: 1000; display: none; }
+        
+        .icon-coin { color: #f59e0b; fill: currentColor; width: 20px; height: 20px; }
+        .icon-ticket { color: #0ea5e9; fill: currentColor; width: 24px; height: 24px; }
     </style>
 </head>
 <body class="flex flex-col items-center p-4 min-h-screen">
@@ -81,21 +78,23 @@
         Reset Progress ⚠️
     </button>
 
-    <button id="themeToggle" onclick="toggleTheme()" class="fixed bottom-6 right-6 z-50 duo-btn bg-slate-800 border-slate-900 text-white p-4 rounded-full text-xl shadow-2xl">
-        🌙
-    </button>
-
     <header class="w-full max-w-md glass-card rounded-3xl p-5 mb-10 flex justify-around items-center sticky top-4 z-50 shadow-lg">
-        <div class="text-center">
-            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">coins</p>
-            <p class="text-xl font-black text-amber-500" id="coinDisplay">🪙 0</p>
+        <div class="flex flex-col items-center">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">coins</p>
+            <div class="flex items-center gap-1 font-black text-amber-500 text-xl">
+                <svg class="icon-coin" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.39 2.1-1.39 1.47 0 2.01.59 2.06 1.47h1.73c-.06-1.54-1.12-2.67-2.78-3.05V5h-2v1.48c-1.47.31-2.72 1.28-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.74-2.32-1.47H8.35c.1 1.66 1.36 2.66 2.86 3.03V19h2v-1.47c1.55-.26 2.81-1.24 2.81-2.81 0-2.01-1.57-2.65-3.66-3.18z"/></svg>
+                <span id="coinDisplay">0</span>
+            </div>
+        </div>
+        <div class="flex flex-col items-center">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Tickets</p>
+            <div class="flex items-center gap-1 font-black text-sky-500 text-xl">
+                <svg class="icon-ticket" viewBox="0 0 24 24"><path d="M15.5 9.5c0 .827.673 1.5 1.5 1.5s1.5-.673 1.5-1.5S17.827 8 17 8s-1.5.673-1.5 1.5zm-9 0c0 .827.673 1.5 1.5 1.5s1.5-.673 1.5-1.5S8.827 8 8 8s-1.5.673-1.5 1.5zM22 7c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7zm-2 10H4V7h16v10z"/></svg>
+                <span id="ticketDisplay">0</span>
+            </div>
         </div>
         <div class="text-center">
-            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tickets</p>
-            <p class="text-xl font-black text-sky-500" id="ticketDisplay">🎟️ 0</p>
-        </div>
-        <div class="text-center">
-            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Timer</p>
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Timer</p>
             <p class="text-xl font-black text-teal-500" id="timerDisplay">00:00:00</p>
         </div>
     </header>
@@ -103,6 +102,13 @@
     <div id="heroMascot" class="flex flex-col items-center mb-8">
         <div id="bunnyFace" class="text-8xl mb-4 drop-shadow-xl hop cursor-pointer" onclick="interactMascot()">🐰</div>
         <div class="glass-card border-2 border-slate-100 rounded-2xl p-4 relative shadow-xl max-w-[280px] text-center">
+            <div id="confirmationBox" class="hidden flex flex-col gap-2 mb-2">
+                <p class="font-bold text-sm text-sky-500" id="confirmText">Switch theme?</p>
+                <div class="flex gap-2 justify-center">
+                    <button onclick="confirmTheme(true)" class="bg-teal-500 text-white px-3 py-1 rounded-lg text-xs font-black">YES</button>
+                    <button onclick="confirmTheme(false)" class="bg-slate-400 text-white px-3 py-1 rounded-lg text-xs font-black">NO</button>
+                </div>
+            </div>
             <p class="font-bold text-sm" id="mascotText">Welcome back! I'm so ready to help you succeed! ✨</p>
             <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-2 border-l-2 border-slate-100 rotate-45"></div>
         </div>
@@ -118,14 +124,27 @@
     <div id="questList" class="w-full max-w-md space-y-4 mb-32"></div>
 
     <footer class="fixed bottom-0 w-full max-w-md glass-card border-t-2 border-white/20 p-6 flex gap-4 rounded-t-[3rem] z-40 shadow-2xl">
-        <button onclick="buyTicket()" class="flex-1 duo-btn bg-amber-400 border-amber-600 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Buy Ticket<br><span class="opacity-80">1000 Coins</span></button>
+        <button onclick="buyTicket()" class="flex-1 duo-btn bg-amber-400 border-amber-600 text-white p-4 rounded-2xl font-black text-[10px] uppercase flex flex-col items-center justify-center">
+            <span>Buy Ticket</span>
+            <span class="opacity-80 flex items-center gap-1"><svg class="w-3 h-3 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg> 1000</span>
+        </button>
         <button id="toggleBtn" onclick="toggleTimer()" class="duo-btn bg-white border-slate-200 p-4 rounded-full text-xl shadow-md text-slate-800">🎮</button>
         <button onclick="useTicket()" class="flex-1 duo-btn bg-sky-500 border-sky-700 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Use Ticket<br><span class="opacity-80">+1 HR Time</span></button>
     </footer>
 
     <script>
         let state = { coins: 0, tickets: 0, gameSeconds: 0, isTimerActive: false, tasks: [], isDark: false };
-        
+        let pendingTheme = null;
+
+        const FACES = {
+            normal: "🐰",
+            happy: "🥳",
+            thinking: "🤔",
+            disappointed: "🤨",
+            angry: "💢",
+            blink: "✨🐰"
+        };
+
         const sounds = {
             add: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
             done: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
@@ -134,30 +153,22 @@
         };
 
         const DIALOGUES = {
-            legendary: ["WHOA! A Legendary Quest?! You're a hero! ⚔️", "This looks tough, but you're tougher! 💪", "I'll be cheering the loudest for this one! ✨"],
-            rare: ["Ooh, a challenge! I like it! 🌟", "You're stepping up your game! 🥕", "Success is just a few steps away!"],
-            common: ["Steady progress is the best progress! 👍", "One more quest for the books!", "Let's get this done quickly! 🏃‍♂️"],
-            angry: ["*Gasp* No rewards for video games! Get back to work! 💢", "My bunny ears twitch with disappointment... No coins! 🛑", "Questify says: Work first, play later! 🙅‍♂️"],
-            jibberish: ["Huh? I don't speak 'keyboard-mash'! 🤨", "Is that a secret code? Use real words! 📜", "My brain is fuzzy... what does that mean? 😵‍💫"],
-            complete: ["VICTORY! You did it! 🎉", "Cha-ching! Look at those coins! 🪙", "You're unstoppable today! ✨", "One step closer to greatness!"],
-            buy: ["Enjoy your ticket! You earned it! 🎟️", "Spending wisely, I see! 💰", "Tickets are the gateway to fun!"],
-            noMoney: ["Oh no, friend! You need more coins! 🪙", "Maybe one more quest before we shop? 🥕", "Savings are a bit low for that! 📉"],
-            timerStart: ["Game on! Enjoy your break! 🎮", "Timer's ticking! Have fun! ✨", "Relax time! You deserved this!"],
-            timerStop: ["Back to reality! Let's do this! 💼", "Pause! Ready for more quests?", "Break's over, let's keep the momentum!"],
-            darkToggle: ["Going stealth mode? I like it! 🌙", "Ah, much easier on the eyes! ✨", "Let's work in the shadows! 🌑"]
+            legendary: ["WHOA! A Legendary Quest?! ⚔️", "This is huge! You're a hero! 💪"],
+            rare: ["Ooh, a challenge! I like it! 🌟", "You're stepping up! 🥕"],
+            common: ["Steady progress is key! 👍", "Let's get this done! 🏃‍♂️"],
+            angry: ["*Twitch* No rewards for video games! 🛑", "Work first, play later! 🙅‍♂️"],
+            jibberish: ["Huh? I don't speak 'keyboard-mash'! 🤨", "Is that a secret code? 📜"],
+            complete: ["VICTORY! You did it! 🎉", "Cha-ching! 🪙", "Unstoppable! ✨"],
+            themePrompt: ["Oh! Want to change the vibe?", "Should I switch the lights?", "Changing the scenery?"],
+            darkToggle: ["Stealth mode engaged! 🌑", "Ah, much better! 🌙"],
+            lightToggle: ["Bright and early! ☀️", "Let there be light! ✨"]
         };
 
-        function speak(type) {
+        function speak(type, face = 'normal') {
             const list = DIALOGUES[type];
             document.getElementById('mascotText').innerText = list[Math.floor(Math.random() * list.length)];
-        }
-
-        function toggleTheme() {
-            state.isDark = !state.isDark;
-            document.body.classList.toggle('dark-mode');
-            document.getElementById('themeToggle').innerText = state.isDark ? '☀️' : '🌙';
-            speak('darkToggle');
-            saveData();
+            document.getElementById('bunnyFace').innerText = FACES[face] || FACES.normal;
+            if(face !== 'normal') setTimeout(() => document.getElementById('bunnyFace').innerText = FACES.normal, 3000);
         }
 
         function checkSecretCommand(input) {
@@ -166,62 +177,89 @@
         }
 
         function triggerReset() {
-            const response = confirm("Oh no! My friend, are you sure? All your progress will be lost! 🥺");
-            if (response) { localStorage.clear(); location.reload(); }
-        }
-
-        function interactMascot() {
-            const quotes = ["I believe in you!", "Doing great!", "Let's finish quests!", "Proud of you! 💖", "Did you know you're awesome?"];
-            document.getElementById('mascotText').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-        }
-
-        function isJibberish(text) {
-            const input = text.trim().toLowerCase();
-            if (input.length < 3) return true;
-            if (!/[aeiouy]/.test(input)) return true;
-            if (/(.)\1{2,}/.test(input)) return true;
-            if (/[bcdfghjklmnpqrstvwxz]{5,}/.test(input)) return true;
-            return false;
-        }
-
-        function evaluateTask(text) {
-            const input = text.toLowerCase();
-            if (input.includes('video game') || input.includes('play')) return { reward: 0, tier: "ANGRY", color: "text-red-600", bg: "bg-red-50" };
-            const highEffort = ['exam', 'study', 'clean', 'workout', 'gym', 'run', 'homework', 'project', 'coding', 'math', 'work'];
-            const medEffort = ['laundry', 'cook', 'organize', 'practice', 'write', 'read'];
-            if (highEffort.some(word => input.includes(word))) return { reward: Math.floor(Math.random() * 201) + 800, tier: "LEGENDARY", color: "text-sky-600", bg: "bg-sky-50" };
-            if (medEffort.some(word => input.includes(word))) return { reward: Math.floor(Math.random() * 301) + 400, tier: "RARE", color: "text-teal-600", bg: "bg-teal-50" };
-            return { reward: Math.floor(Math.random() * 201) + 100, tier: "COMMON", color: "text-slate-500", bg: "bg-slate-100" };
+            if (confirm("Oh no! All your progress will be lost! 🥺")) { 
+                localStorage.clear(); 
+                location.reload(); 
+            }
         }
 
         function addTask() {
             const input = document.getElementById('taskInput');
-            const text = input.value.trim();
-            if (!text || text.toLowerCase() === 'reset') return;
+            const text = input.value.trim().toLowerCase();
+            if (!text || text === 'reset') return;
+
+            // Check for Theme Commands
+            if (text === 'dark' || text === 'dark mode') {
+                promptTheme(true);
+                input.value = '';
+                return;
+            }
+            if (text === 'light' || text === 'light mode') {
+                promptTheme(false);
+                input.value = '';
+                return;
+            }
 
             if (isJibberish(text)) {
                 sounds.error.play();
                 input.classList.add('shake');
                 setTimeout(() => input.classList.remove('shake'), 400);
-                speak('jibberish');
+                speak('jibberish', 'disappointed');
                 return;
             }
 
             const eval = evaluateTask(text);
-            state.tasks.push({ id: Date.now(), text, ...eval });
+            state.tasks.push({ id: Date.now(), text: input.value, ...eval });
             sounds.add.play();
             input.value = '';
-            document.getElementById('resetBtn').style.display = 'none';
             renderQuests();
             saveData();
-            speak(eval.tier.toLowerCase());
+            speak(eval.tier.toLowerCase(), eval.tier === 'ANGRY' ? 'angry' : 'normal');
+        }
+
+        function promptTheme(dark) {
+            pendingTheme = dark;
+            document.getElementById('confirmationBox').classList.remove('hidden');
+            document.getElementById('confirmText').innerText = dark ? "Switch to Dark Mode?" : "Switch to Light Mode?";
+            speak('themePrompt', 'thinking');
+        }
+
+        function confirmTheme(yes) {
+            document.getElementById('confirmationBox').classList.add('hidden');
+            if (yes) {
+                state.isDark = pendingTheme;
+                applyTheme();
+                speak(state.isDark ? 'darkToggle' : 'lightToggle', 'happy');
+                saveData();
+            } else {
+                speak('common', 'normal');
+            }
+            pendingTheme = null;
+        }
+
+        function applyTheme() {
+            document.body.classList.toggle('dark-mode', state.isDark);
+        }
+
+        function isJibberish(text) {
+            if (text.length < 3) return true;
+            if (!/[aeiouy]/.test(text)) return true;
+            if (/(.)\1{2,}/.test(text)) return true;
+            return false;
+        }
+
+        function evaluateTask(text) {
+            if (text.includes('video game') || text.includes('play')) return { reward: 0, tier: "ANGRY", color: "text-red-600", bg: "bg-red-50" };
+            const highEffort = ['exam', 'study', 'clean', 'workout', 'gym', 'run', 'homework', 'project', 'coding', 'math', 'work'];
+            if (highEffort.some(word => text.includes(word))) return { reward: Math.floor(Math.random() * 201) + 800, tier: "LEGENDARY", color: "text-sky-600", bg: "bg-sky-50" };
+            return { reward: Math.floor(Math.random() * 201) + 100, tier: "COMMON", color: "text-slate-500", bg: "bg-slate-100" };
         }
 
         function completeTask(id, reward) {
             state.coins += reward;
             state.tasks = state.tasks.filter(t => t.id !== id);
             sounds.done.play();
-            speak('complete');
+            speak('complete', 'happy');
             updateUI();
             renderQuests();
             saveData();
@@ -231,10 +269,11 @@
             if (state.coins >= 1000) {
                 state.coins -= 1000; state.tickets++;
                 sounds.buy.play(); 
-                speak('buy');
+                speak('complete', 'happy');
                 updateUI(); saveData();
             } else {
-                speak('noMoney');
+                document.getElementById('mascotText').innerText = "Not enough coins! 🪙";
+                document.getElementById('bunnyFace').innerText = FACES.disappointed;
                 sounds.error.play();
             }
         }
@@ -245,15 +284,12 @@
                 sounds.buy.play(); 
                 document.getElementById('mascotText').innerText = "One hour added! Go play! 🎮";
                 updateUI(); saveData();
-            } else {
-                document.getElementById('mascotText').innerText = "You need a ticket first! 🎟️";
             }
         }
 
         function toggleTimer() {
             if (state.gameSeconds <= 0 && !state.isTimerActive) return;
             state.isTimerActive = !state.isTimerActive;
-            speak(state.isTimerActive ? 'timerStart' : 'timerStop');
             updateUI();
         }
 
@@ -276,8 +312,8 @@
         }
 
         function updateUI() {
-            document.getElementById('coinDisplay').innerText = "🪙 " + state.coins;
-            document.getElementById('ticketDisplay').innerText = "🎟️ " + state.tickets;
+            document.getElementById('coinDisplay').innerText = state.coins;
+            document.getElementById('ticketDisplay').innerText = state.tickets;
             const btn = document.getElementById('toggleBtn');
             btn.className = state.isTimerActive ? "duo-btn bg-sky-500 border-sky-700 p-4 rounded-full text-white" : "duo-btn bg-white border-slate-200 p-4 rounded-full shadow-md text-slate-800";
         }
@@ -291,25 +327,23 @@
                 document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
                 if (state.gameSeconds <= 0) {
                     state.isTimerActive = false;
-                    speak('timerStop');
                     updateUI();
                 }
             }
         }, 1000);
 
-        function saveData() { localStorage.setItem('questifyData', JSON.stringify(state)); }
+        function saveData() { localStorage.setItem('questifyData_v2', JSON.stringify(state)); }
         function loadData() {
-            const saved = localStorage.getItem('questifyData');
+            const saved = localStorage.getItem('questifyData_v2');
             if (saved) { 
                 state = JSON.parse(saved); 
                 state.isTimerActive = false; 
-                if(state.isDark) document.body.classList.add('dark-mode');
+                applyTheme();
                 renderQuests(); 
                 updateUI(); 
             }
         }
         window.onload = loadData;
-        
     </script>
 </body>
 </html>
