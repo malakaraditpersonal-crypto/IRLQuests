@@ -1,281 +1,792 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questify - Background Timer Edition</title>
+    <title>Questify: Ultimate Edition</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
         :root {
-            --bg-flow-1: #f0f9ff;
-            --bg-flow-2: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.8);
-            --text-main: #334155;
-            --accent: #0ea5e9;
+            /* PURE BLACK FOR LIGHT MODE */
+            --bg-flow-1: #e0f2fe;
+            --bg-flow-2: #f0f9ff;
+            --bg-flow-3: #eff6ff;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --text-main: #000000; /* Pure Black */
+            --text-muted: #1a1a1a; /* Very Dark Gray */
+            --input-placeholder: #555555;
         }
 
         .dark-mode {
+            /* PURE WHITE FOR DARK MODE */
             --bg-flow-1: #0f172a;
-            --bg-flow-2: #1e293b;
-            --card-bg: rgba(30, 41, 59, 0.8);
-            --text-main: #f1f5f9;
-            --accent: #38bdf8;
+            --bg-flow-2: #1e1b4b;
+            --bg-flow-3: #172554;
+            --card-bg: rgba(15, 23, 42, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-main: #ffffff; /* Pure White */
+            --text-muted: #e5e5e5; /* Very Light Gray */
+            --input-placeholder: #a3a3a3;
         }
 
-        @keyframes flow {
-            0% { background-color: var(--bg-flow-1); }
-            50% { background-color: var(--bg-flow-2); }
-            100% { background-color: var(--bg-flow-1); }
-        }
-
-        body { 
-            font-family: 'Nunito', sans-serif; 
-            animation: flow 20s ease-in-out infinite;
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-size: 400% 400%;
+            background-image: linear-gradient(-45deg, var(--bg-flow-1), var(--bg-flow-2), var(--bg-flow-3));
+            animation: gradientBG 15s ease infinite;
             color: var(--text-main);
             transition: color 0.3s ease;
-        }
-        
-        .duo-btn {
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-bottom-width: 5px;
-            position: relative;
+            overflow-x: hidden;
         }
 
-        .duo-btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
-        .duo-btn:active { transform: translateY(4px); border-bottom-width: 0px; margin-bottom: 5px; }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
+        /* --- Animations --- */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-enter { animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop { animation: pop 0.2s ease-out; }
+
+        /* --- Components --- */
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
         }
 
-        @keyframes hop {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .btn-press {
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-        .hop { animation: hop 2s infinite ease-in-out; }
-
-        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-
-        #resetBtn { position: fixed; top: 20px; left: 20px; z-index: 1000; display: none; }
+        .btn-press:active { transform: scale(0.95); }
         
-        .icon-coin { color: #f59e0b; fill: currentColor; width: 20px; height: 20px; }
-        .icon-ticket { color: #0ea5e9; fill: currentColor; width: 24px; height: 24px; }
+        /* Shimmer Effect for Rare/Gold */
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg, 
+                rgba(255, 255, 255, 0) 0, 
+                rgba(255, 255, 255, 0.4) 20%, 
+                rgba(255, 255, 255, 0.7) 60%, 
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        /* Placeholders */
+        ::placeholder { color: var(--input-placeholder) !important; opacity: 1; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .toast {
+            background: #000000;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .dark-mode .toast { background: #ffffff; color: #000000; }
     </style>
 </head>
-<body class="flex flex-col items-center p-4 min-h-screen">
+<body class="flex flex-col items-center min-h-screen pb-24 px-4 overflow-hidden-x">
 
-    <button id="resetBtn" onclick="triggerReset()" class="duo-btn bg-red-500 border-red-700 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-xl">
-        Reset Progress ⚠️
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Hidden Reset -->
+    <button id="resetBtn" onclick="triggerReset()" class="fixed top-4 left-4 z-50 hidden bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow-xl animate-enter">
+        <i class="ph-bold ph-trash"></i> FULL RESET
     </button>
 
-    <header class="w-full max-w-md glass-card rounded-3xl p-5 mb-10 flex justify-around items-center sticky top-4 z-50 shadow-lg">
-        <div class="flex flex-col items-center">
-            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">coins</p>
-            <div class="flex items-center gap-1 font-black text-amber-500 text-xl">
-                <svg class="icon-coin" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.39 2.1-1.39 1.47 0 2.01.59 2.06 1.47h1.73c-.06-1.54-1.12-2.67-2.78-3.05V5h-2v1.48c-1.47.31-2.72 1.28-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.74-2.32-1.47H8.35c.1 1.66 1.36 2.66 2.86 3.03V19h2v-1.47c1.55-.26 2.81-1.24 2.81-2.81 0-2.01-1.57-2.65-3.66-3.18z"/></svg>
-                <span id="coinDisplay">0</span>
+    <!-- Header Stats -->
+    <header class="w-full max-w-md glass-card rounded-[2rem] p-3 mt-4 mb-6 flex justify-between items-center sticky top-2 z-40 animate-enter" style="animation-delay: 0s;">
+        <!-- Coins -->
+        <div class="flex flex-col items-center w-1/3 border-r border-black/10 dark:border-white/20 group cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors py-1" onclick="aiReact('check_coins')">
+            <div class="flex items-center gap-1.5 text-amber-500">
+                <i class="ph-fill ph-coins text-2xl drop-shadow-sm group-hover:scale-110 transition-transform"></i>
+                <span id="coinDisplay" class="font-black text-xl tracking-tight" style="color: var(--text-main)">0</span>
             </div>
+            <p class="text-[9px] font-extrabold uppercase tracking-widest mt-0.5" style="color: var(--text-muted)">Gold</p>
         </div>
-        <div class="flex flex-col items-center">
-            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Tickets</p>
-            <div class="flex items-center gap-1 font-black text-sky-500 text-xl">
-                <svg class="icon-ticket" viewBox="0 0 24 24"><path d="M15.5 9.5c0 .827.673 1.5 1.5 1.5s1.5-.673 1.5-1.5S17.827 8 17 8s-1.5.673-1.5 1.5zm-9 0c0 .827.673 1.5 1.5 1.5s1.5-.673 1.5-1.5S8.827 8 8 8s-1.5.673-1.5 1.5zM22 7c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7zm-2 10H4V7h16v10z"/></svg>
-                <span id="ticketDisplay">0</span>
+        
+        <!-- Timer -->
+        <div class="flex flex-col items-center w-1/3">
+            <div class="flex items-center gap-1.5 text-teal-600 dark:text-teal-400">
+                <i class="ph-duotone ph-clock-countdown text-2xl animate-pulse"></i>
+                <span id="timerDisplay" class="font-black text-xl tabular-nums tracking-tight" style="color: var(--text-main)">00:00</span>
             </div>
+            <p class="text-[9px] font-extrabold uppercase tracking-widest mt-0.5" style="color: var(--text-muted)">Focus</p>
         </div>
-        <div class="text-center">
-            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Timer</p>
-            <p class="text-xl font-black text-teal-500" id="timerDisplay">00:00:00</p>
+
+        <!-- Tickets -->
+        <div class="flex flex-col items-center w-1/3 border-l border-black/10 dark:border-white/20 group cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors py-1" onclick="aiReact('check_tickets')">
+            <div class="flex items-center gap-1.5 text-sky-600 dark:text-sky-400">
+                <i class="ph-fill ph-ticket text-2xl drop-shadow-sm group-hover:rotate-12 transition-transform"></i>
+                <span id="ticketDisplay" class="font-black text-xl tracking-tight" style="color: var(--text-main)">0</span>
+            </div>
+            <p class="text-[9px] font-extrabold uppercase tracking-widest mt-0.5" style="color: var(--text-muted)">Passes</p>
         </div>
     </header>
 
-    <div id="heroMascot" class="flex flex-col items-center mb-8">
-        <div id="bunnyFace" class="text-8xl mb-4 drop-shadow-xl hop cursor-pointer" onclick="interactMascot()">🐰</div>
-        <div class="glass-card border-2 border-slate-100 rounded-2xl p-4 relative shadow-xl max-w-[280px] text-center">
-            <div id="confirmationBox" class="hidden flex flex-col gap-2 mb-2">
-                <p class="font-bold text-sm text-sky-500" id="confirmText">Switch theme?</p>
+    <!-- Mascot Section -->
+    <div id="heroMascot" class="flex flex-col items-center mb-6 w-full max-w-md animate-enter" style="animation-delay: 0.1s;">
+        <div class="relative group">
+            <div id="bunnyFace" class="text-8xl drop-shadow-2xl animate-float cursor-pointer select-none transition-transform active:scale-90 active:rotate-3" onclick="interactMascot()">🐰</div>
+            <!-- Click Hint -->
+            <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm pointer-events-none">Poke me!</div>
+        </div>
+        
+        <!-- Speech Bubble -->
+        <div class="glass-card rounded-2xl p-4 mt-4 relative w-full text-center transition-all duration-300 hover:scale-[1.02] shadow-md">
+            <!-- Theme Toggle Prompt (Hidden by default) -->
+            <div id="confirmationBox" class="hidden flex flex-col gap-3 mb-2 animate-enter">
+                <p class="font-bold text-sm text-indigo-600 dark:text-indigo-400 flex items-center justify-center gap-2">
+                    <i class="ph-fill ph-palette"></i> <span id="confirmText">Switch theme?</span>
+                </p>
                 <div class="flex gap-2 justify-center">
-                    <button onclick="confirmTheme(true)" class="bg-teal-500 text-white px-3 py-1 rounded-lg text-xs font-black">YES</button>
-                    <button onclick="confirmTheme(false)" class="bg-slate-400 text-white px-3 py-1 rounded-lg text-xs font-black">NO</button>
+                    <button onclick="confirmTheme(true)" class="bg-black dark:bg-white text-white dark:text-black px-5 py-1.5 rounded-xl text-xs font-black shadow-lg active:scale-95 transition">YES</button>
+                    <button onclick="confirmTheme(false)" class="bg-gray-400 text-white px-5 py-1.5 rounded-xl text-xs font-black shadow-lg active:scale-95 transition">NO</button>
                 </div>
             </div>
-            <p class="font-bold text-sm" id="mascotText">Welcome back! I'm ready to grind! ✨</p>
-            <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-2 border-l-2 border-slate-100 rotate-45"></div>
+
+            <p class="font-bold text-sm leading-relaxed flex items-center justify-center gap-2 min-h-[20px]" style="color: var(--text-main)" id="mascotText">
+                <span class="animate-pulse">...</span>
+            </p>
+            <!-- Tail -->
+            <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t border-l border-black/10 dark:border-white/20 rotate-45 bg-inherit z-10"></div>
         </div>
     </div>
 
-    <div class="w-full max-w-md mb-10">
-        <div class="flex gap-3 glass-card p-2 rounded-[2rem] shadow-xl">
-            <input type="text" id="taskInput" oninput="checkSecretCommand(this)" onkeydown="if(event.key==='Enter') addTask()" placeholder="What is your quest?" class="bg-transparent flex-1 p-4 rounded-2xl focus:outline-none font-bold placeholder:text-slate-400">
-            <button onclick="addTask()" class="duo-btn bg-teal-500 border-teal-700 text-white px-8 rounded-2xl font-black uppercase">Add</button>
+    <!-- Input Area -->
+    <div class="w-full max-w-md mb-6 sticky top-28 z-30 animate-enter" style="animation-delay: 0.2s;">
+        <div class="flex gap-2 glass-card p-2 rounded-[1.8rem] shadow-xl ring-2 ring-transparent focus-within:ring-indigo-500/50 transition-all duration-300">
+            <button onclick="generateDailyQuests(true)" class="btn-press bg-gradient-to-br from-violet-600 to-fuchsia-700 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-violet-500/30" title="Force Daily Refresh">
+                <i class="ph-bold ph-arrows-clockwise text-xl"></i>
+            </button>
+            
+            <div class="flex-1 relative flex items-center">
+                <input type="text" id="taskInput" 
+                    oninput="checkSecretCommand(this)" 
+                    onkeydown="if(event.key==='Enter') addTask()" 
+                    placeholder="Type a quest..." 
+                    class="bg-transparent w-full px-4 py-3 focus:outline-none font-bold placeholder:text-gray-500"
+                    style="color: var(--text-main);">
+            </div>
+
+            <button onclick="addTask()" class="btn-press bg-gradient-to-br from-teal-500 to-emerald-600 text-white px-5 rounded-2xl font-black shadow-lg hover:shadow-teal-500/30">
+                <i class="ph-bold ph-plus text-xl"></i>
+            </button>
         </div>
     </div>
 
-    <div id="questList" class="w-full max-w-md space-y-4 mb-32"></div>
+    <!-- Quest List -->
+    <div id="questList" class="w-full max-w-md space-y-3 pb-8">
+        <!-- Quests inject here -->
+    </div>
 
-    <footer class="fixed bottom-0 w-full max-w-md glass-card border-t-2 border-white/20 p-6 flex gap-4 rounded-t-[3rem] z-40 shadow-2xl">
-        <button onclick="buyTicket()" class="flex-1 duo-btn bg-amber-400 border-amber-600 text-white p-4 rounded-2xl font-black text-[10px] uppercase flex flex-col items-center justify-center">
-            <span>Buy Ticket</span>
-            <span class="opacity-80 flex items-center gap-1"><svg class="w-3 h-3 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg> 1000</span>
+    <!-- Bottom Spacer -->
+    <div class="h-24"></div>
+
+    <!-- Footer Controls -->
+    <footer class="fixed bottom-0 w-full max-w-md glass-card border-t border-white/40 dark:border-white/10 p-4 pb-6 flex gap-4 rounded-t-[2.5rem] z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] animate-enter" style="animation-delay: 0.3s;">
+        <!-- Buy Ticket -->
+        <button onclick="buyTicket()" class="flex-1 btn-press bg-gradient-to-b from-amber-400 to-amber-600 text-white py-3 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-amber-500/20 shadow-lg relative overflow-hidden group">
+            <span class="text-[10px] font-black uppercase tracking-wider relative z-10">Shop</span>
+            <div class="flex items-center gap-1 bg-black/10 px-2 py-0.5 rounded-full relative z-10">
+                <i class="ph-fill ph-ticket text-xs"></i>
+                <span class="text-xs font-bold">1000</span>
+            </div>
+            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
         </button>
-        <button id="toggleBtn" onclick="toggleTimer()" class="duo-btn bg-white border-slate-200 p-4 rounded-full text-xl shadow-md text-slate-800">🎮</button>
-        <button onclick="useTicket()" class="flex-1 duo-btn bg-sky-500 border-sky-700 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Use Ticket<br><span class="opacity-80">+1 HR Time</span></button>
+
+        <!-- Game Mode Toggle -->
+        <button id="toggleBtn" onclick="toggleTimer()" class="btn-press bg-white dark:bg-slate-800 text-black dark:text-white w-20 h-20 -mt-12 rounded-full shadow-2xl flex items-center justify-center text-4xl z-50 border-4 border-white dark:border-slate-700 transition-colors">
+            <i class="ph-fill ph-game-controller"></i>
+        </button>
+
+        <!-- Use Ticket -->
+        <button onclick="useTicket()" class="flex-1 btn-press bg-gradient-to-b from-sky-400 to-blue-600 text-white py-3 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sky-500/20 shadow-lg relative overflow-hidden group">
+            <span class="text-[10px] font-black uppercase tracking-wider relative z-10">Boost</span>
+            <div class="flex items-center gap-1 bg-black/10 px-2 py-0.5 rounded-full relative z-10">
+                <i class="ph-bold ph-clock text-xs"></i>
+                <span class="text-xs font-bold">+1 Hr</span>
+            </div>
+            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+        </button>
     </footer>
 
     <script>
-        // --- CORE STATE ---
-        let state = { 
-            coins: 0, 
-            tickets: 0, 
-            gameSeconds: 0, 
-            isTimerActive: false, 
-            endTime: null, // Critical for background tracking
-            tasks: [], 
-            isDark: false 
-        };
-        let pendingTheme = null;
-
-        // --- ASSETS ---
-        const FACES = { normal: "🐰", happy: "🥳", thinking: "🤔", disappointed: "🤨", angry: "💢" };
-        const sounds = {
-            add: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
-            done: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+        // --- 1. CONFIGURATION & ASSETS ---
+        const SOUNDS = {
+            pop: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+            success: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
             error: new Audio('https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'),
-            buy: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
-            alarm: new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3')
+            cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
+            magic: new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3'),
+            daily: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3')
+        };
+        Object.values(SOUNDS).forEach(s => s.volume = 0.4);
+
+        const FACES = { 
+            normal: "🐰", happy: "🤩", thinking: "🧐", disappointed: "😒", 
+            angry: "🤬", magic: "🧙‍♂️", rich: "🤑", sleep: "😴", cool: "😎",
+            shock: "🤯", love: "🥰"
         };
 
-        // --- BACKGROUND PERSISTENCE HACK ---
-        // A silent audio loop prevents iOS/Android from "freezing" the JS execution
-        const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
-        silentAudio.loop = true;
+        const DAILY_POOL = [
+            "Drink a glass of water 💧", "Make the bed 🛏️", "5 mins stretching 🧘", 
+            "Read 10 pages of a book 📖", "Clear one desk surface 🧹", "Write down 3 goals 📝",
+            "Send a nice text 💬", "Do 20 jumping jacks 🏃", "Meditate for 5 mins 🧘‍♂️",
+            "Eat a fruit 🍎", "No phone for 30 mins 📵", "Clean inbox 📧",
+            "Water the plants 🌿", "Listen to a podcast 🎵", "Organize files 📂",
+            "Plan tomorrow 🗓️", "Walk outside 15m 🌳", "Deep breathe 2 min 🌬️",
+            "Clean screen 💻", "Save $5 today 🐖", "Study for 30 mins 📚", "Go to the gym 💪"
+        ];
 
         const DIALOGUES = {
-            legendary: ["WHOA! A Legendary Quest?! ⚔️", "This is huge! You're a hero! 💪"],
-            rare: ["Ooh, a challenge! I like it! 🌟", "You're stepping up! 🥕"],
-            common: ["Steady progress is key! 👍", "Let's get this done! 🏃‍♂️"],
-            angry: ["*Twitch* No rewards for video games! 🛑", "Work first, play later! 🙅‍♂️"],
-            jibberish: ["Huh? I don't speak 'keyboard-mash'! 🤨", "Is that a secret code? 📜"],
-            complete: ["VICTORY! You did it! 🎉", "Cha-ching! 🪙", "Unstoppable! ✨"],
-            themePrompt: ["Oh! Want to change the vibe?", "Should I switch the lights?", "Changing the scenery?"],
-            darkToggle: ["Stealth mode engaged! 🌑", "Ah, much better! 🌙"],
-            lightToggle: ["Bright and early! ☀️", "Let there be light! ✨"]
+            intro_morning: ["Rise and shine! ☀️", "Let's conquer the day! ☕", "Early bird gets the coins! 🐦"],
+            intro_night: ["Burning the midnight oil? 🌙", "Late night grind! 🦉", "Finish up and rest! 🛌"],
+            rich: ["Wow! Look at that gold! 🤑", "We are rich!! 💰", "Buy something nice! 🛍️"],
+            poor: ["We need more gold... 🥺", "Empty pockets... work harder! 📉"],
+            annoyed: ["Stop poking me! 👉", "I'm not a stress ball! 💢", "Focus on the tasks! 📜"],
+            encouragement: ["You're doing great! 🔥", "One step at a time! 👣", "Keep the streak alive! ⚡"],
+            rare: ["A QUEST FOR HEROES! ⚔️", "Big money, big effort! 🦕", "Legendary status! 🏆"],
+            daily: ["New Daily Quests added! ☀️", "Fresh tasks for a fresh day! 📅"],
+            complete: ["Crushed it! 🎉", "Easy peasy! 😎", "Another one bites the dust! 💨"]
         };
 
-        // --- CORE FUNCTIONS ---
-        function speak(type, face = 'normal') {
-            const list = DIALOGUES[type];
-            document.getElementById('mascotText').innerText = list[Math.floor(Math.random() * list.length)];
-            document.getElementById('bunnyFace').innerText = FACES[face] || FACES.normal;
-            if(face !== 'normal') setTimeout(() => document.getElementById('bunnyFace').innerText = FACES.normal, 3000);
+        // --- 2. STATE MANAGEMENT ---
+        let state = {
+            coins: 0,
+            tickets: 0,
+            gameSeconds: 0,
+            isTimerActive: false,
+            endTime: null,
+            tasks: [],
+            lastLoginDate: null,
+            isDark: false
+        };
+
+        let mascotClicks = 0;
+        let pendingTheme = null;
+
+        // --- 3. AI & INTERACTION ENGINE ---
+        function aiReact(trigger, extra = null) {
+            let msg = "";
+            let face = "normal";
+
+            switch(trigger) {
+                case 'login':
+                    const hour = new Date().getHours();
+                    const timeKey = hour < 12 ? 'intro_morning' : 'intro_night';
+                    msg = getRandom(DIALOGUES[timeKey]);
+                    face = hour < 12 ? 'happy' : 'cool';
+                    break;
+                case 'check_coins':
+                    if(state.coins > 5000) { msg = getRandom(DIALOGUES.rich); face = "rich"; }
+                    else if(state.coins < 500) { msg = getRandom(DIALOGUES.poor); face = "disappointed"; }
+                    else { msg = "Keep saving up!"; face = "thinking"; }
+                    break;
+                case 'poke':
+                    mascotClicks++;
+                    if(mascotClicks > 5) { msg = getRandom(DIALOGUES.annoyed); face = "angry"; }
+                    else if(mascotClicks > 2) { msg = "Hey! Watch the fur!"; face = "thinking"; }
+                    else { msg = getRandom(DIALOGUES.encouragement); face = "love"; }
+                    setTimeout(() => mascotClicks = 0, 5000);
+                    break;
+                case 'daily':
+                    msg = getRandom(DIALOGUES.daily);
+                    face = "happy";
+                    break;
+                case 'complete':
+                    msg = getRandom(DIALOGUES.complete);
+                    face = "happy";
+                    break;
+                case 'rare':
+                    msg = getRandom(DIALOGUES.rare);
+                    face = "shock";
+                    break;
+            }
+
+            updateMascot(msg, face);
+        }
+
+        function updateMascot(text, faceKey) {
+            const bubble = document.getElementById('mascotText');
+            const face = document.getElementById('bunnyFace');
+            
+            bubble.style.opacity = 0;
+            setTimeout(() => {
+                bubble.innerHTML = text;
+                bubble.style.opacity = 1;
+            }, 200);
+
+            face.innerText = FACES[faceKey] || FACES.normal;
+            face.classList.remove('animate-float');
+            void face.offsetWidth; 
+            face.classList.add('animate-pop');
+            
+            setTimeout(() => {
+                face.innerText = FACES.normal;
+                face.classList.remove('animate-pop');
+                face.classList.add('animate-float');
+            }, 3000);
+        }
+
+        function interactMascot() {
+            SOUNDS.pop.play();
+            aiReact('poke');
+        }
+
+        function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+        // --- 4. DAILY QUEST LOGIC ---
+        function checkDailyQuests() {
+            const today = new Date().toDateString();
+            if (state.lastLoginDate !== today) {
+                generateDailyQuests();
+                state.lastLoginDate = today;
+                saveData();
+                showToast("New Daily Quests Available! ☀️");
+            } else {
+                aiReact('login');
+            }
+        }
+
+        function generateDailyQuests(force = false) {
+            if(force) {
+                SOUNDS.magic.play();
+                const btn = document.querySelector('.ph-arrows-clockwise');
+                btn.classList.add('animate-spin');
+                setTimeout(()=> btn.classList.remove('animate-spin'), 1000);
+            } else {
+                SOUNDS.daily.play();
+            }
+
+            const shuffled = DAILY_POOL.sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 8); // Pick 8
+
+            selected.forEach((text, i) => {
+                const exists = state.tasks.some(t => t.text === text && !t.completed);
+                if(!exists) {
+                    setTimeout(() => {
+                        const taskData = evaluateTask(text);
+                        taskData.isDaily = true;
+                        taskData.isManual = false; // Cannot edit
+                        createTaskObject(text, taskData);
+                    }, i * 100);
+                }
+            });
+
+            aiReact('daily');
+        }
+
+        // --- 5. REWARD & TIER LOGIC ---
+        function evaluateTask(text) {
+            const lower = text.toLowerCase();
+            
+            if (lower.includes('game') || lower.includes('play') || lower.includes('netflix')) 
+                return { reward: 0, tier: "FORBIDDEN", color: "red", icon: "ph-warning-octagon" };
+            
+            const rareKeywords = ['gym', 'study', 'work', 'project', 'run', 'code', 'exam', 'assignment', 'clean house', 'meeting', 'marathon'];
+            if (rareKeywords.some(w => lower.includes(w))) {
+                return { 
+                    reward: Math.floor(Math.random() * (1000 - 800 + 1)) + 800, 
+                    tier: "RARE", 
+                    icon: "ph-sparkle" 
+                };
+            }
+
+            const mediumKeywords = ['read', 'clean', 'organize', 'call', 'cook', 'mail', 'write', 'meditate', 'journal', 'walk'];
+            if (mediumKeywords.some(w => lower.includes(w))) {
+                return { 
+                    reward: Math.floor(Math.random() * (799 - 600 + 1)) + 600, 
+                    tier: "MEDIUM", 
+                    icon: "ph-check-square" 
+                };
+            }
+
+            return { 
+                reward: Math.floor(Math.random() * (599 - 400 + 1)) + 400, 
+                tier: "COMMON", 
+                icon: "ph-check-circle" 
+            };
+        }
+
+        function createTaskObject(text, evalData) {
+            const task = {
+                id: Date.now() + Math.random(),
+                text: text,
+                ...evalData,
+                isManual: evalData.isManual !== undefined ? evalData.isManual : true, // Default to true if not specified
+                createdAt: Date.now()
+            };
+            state.tasks.push(task);
+            saveData();
+            renderQuests();
+            
+            const list = document.getElementById('questList');
+            setTimeout(() => list.lastElementChild?.scrollIntoView({ behavior: 'smooth' }), 100);
         }
 
         function addTask() {
             const input = document.getElementById('taskInput');
-            const text = input.value.trim().toLowerCase();
-            if (!text || text === 'reset') return;
+            const text = input.value.trim();
+            if (!text) return;
 
-            if (text === 'dark' || text === 'dark mode') { promptTheme(true); input.value = ''; return; }
-            if (text === 'light' || text === 'light mode') { promptTheme(false); input.value = ''; return; }
+            if (text.toLowerCase() === 'reset') { input.value=''; return; }
+            if (handleThemeCommand(text)) { input.value=''; return; }
 
-            if (isJibberish(text)) {
-                sounds.error.play();
-                input.classList.add('shake');
-                setTimeout(() => input.classList.remove('shake'), 400);
-                speak('jibberish', 'disappointed');
-                return;
+            const evalData = evaluateTask(text);
+            evalData.isManual = true; // User created this
+            createTaskObject(text, evalData);
+            
+            SOUNDS.pop.play();
+            if(evalData.tier === 'RARE') aiReact('rare');
+            input.value = '';
+        }
+
+        // --- NEW: EDIT FUNCTION ---
+        function editTask(id) {
+            const task = state.tasks.find(t => t.id === id);
+            if (!task) return;
+
+            // Prompt user for new text
+            const newText = prompt("Edit your quest:", task.text);
+            
+            if (newText && newText.trim() !== "" && newText !== task.text) {
+                task.text = newText.trim();
+                
+                // Re-evaluate reward/tier based on new text
+                const newEval = evaluateTask(task.text);
+                task.tier = newEval.tier;
+                task.reward = newEval.reward;
+                task.icon = newEval.icon;
+                
+                // If it became forbidden or rare, play sound
+                if (task.tier === "FORBIDDEN") SOUNDS.error.play();
+                if (task.tier === "RARE") SOUNDS.magic.play();
+
+                saveData();
+                renderQuests();
+                showToast("Quest Updated! 📝");
+            }
+        }
+
+        function renderQuests() {
+            const list = document.getElementById('questList');
+            list.innerHTML = ''; 
+
+            const sortedTasks = [...state.tasks].sort((a, b) => {
+                if (a.isDaily && !b.isDaily) return -1;
+                if (!a.isDaily && b.isDaily) return 1;
+                return b.reward - a.reward;
+            });
+
+            sortedTasks.forEach(task => {
+                const isRare = task.tier === 'RARE';
+                const isMedium = task.tier === 'MEDIUM';
+                const isForbidden = task.tier === 'FORBIDDEN';
+                const isManual = task.isManual !== false; // Backward compatibility for old tasks
+                
+                // Style Logic
+                let borderColor, badgeClass, iconBg;
+                
+                if (isForbidden) {
+                    borderColor = 'border-red-500';
+                    badgeClass = 'bg-red-100 text-red-700';
+                    iconBg = 'bg-red-100 text-red-600';
+                } else if (isRare) {
+                    borderColor = 'border-purple-500';
+                    badgeClass = 'bg-purple-100 text-purple-900';
+                    iconBg = 'bg-purple-100 text-purple-700';
+                } else if (isMedium) {
+                    borderColor = 'border-blue-500';
+                    badgeClass = 'bg-blue-100 text-blue-900';
+                    iconBg = 'bg-blue-100 text-blue-700';
+                } else {
+                    // Common
+                    borderColor = 'border-slate-400 dark:border-slate-500';
+                    badgeClass = 'bg-slate-200 text-black';
+                    iconBg = 'bg-slate-200 text-black';
+                }
+
+                const div = document.createElement('div');
+                div.className = `glass-card border-l-4 ${borderColor} p-4 rounded-2xl flex justify-between items-center mb-3 animate-enter group relative overflow-hidden ${isRare ? 'shimmer' : ''}`;
+                div.id = `task-${task.id}`;
+                
+                const tagHTML = `<span class="text-[9px] font-black uppercase tracking-wider py-0.5 px-2 rounded-md ${badgeClass}">${task.tier}</span>`;
+
+                // Edit Button HTML (Only for manual tasks)
+                const editBtn = isManual ? `
+                    <button onclick="editTask(${task.id})" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-blue-500" title="Edit Quest">
+                        <i class="ph-bold ph-pencil-simple"></i>
+                    </button>
+                ` : '';
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center shrink-0">
+                            <i class="ph-fill ${task.icon} text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-sm truncate pr-2" style="color: var(--text-main)">${task.text}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                ${tagHTML}
+                                <div class="flex items-center gap-1 bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded-md">
+                                    <i class="ph-fill ph-coins text-[10px] text-amber-600 dark:text-amber-400"></i>
+                                    <span class="text-[10px] font-bold text-amber-800 dark:text-amber-300">${task.reward}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-0">
+                        ${editBtn}
+                        <button onclick="deleteTask(${task.id})" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-red-500" title="Delete">
+                            <i class="ph-bold ph-trash"></i>
+                        </button>
+                        <button onclick="completeTask(${task.id}, ${task.reward})" class="ml-2 btn-press w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${isForbidden ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-br from-teal-500 to-emerald-600'}" ${isForbidden ? 'disabled' : ''}>
+                            <i class="ph-bold ph-check text-lg"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            
+            // Empty State
+            if(state.tasks.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center p-8 opacity-60 animate-enter" style="color: var(--text-muted)">
+                        <i class="ph-duotone ph-clipboard-text text-6xl mb-2"></i>
+                        <p class="font-bold">All caught up!</p>
+                        <p class="text-xs">Enjoy your free time.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function completeTask(id, reward) {
+            const el = document.getElementById(`task-${id}`);
+            if(el) {
+                el.style.transform = "scale(0.95) translateX(10px)";
+                el.style.opacity = "0";
             }
 
-            const eval = evaluateTask(text);
-            state.tasks.push({ id: Date.now(), text: input.value, ...eval });
-            sounds.add.play();
-            input.value = '';
-            renderQuests();
-            saveData();
-            speak(eval.tier.toLowerCase(), eval.tier === 'ANGRY' ? 'angry' : 'normal');
+            setTimeout(() => {
+                state.tasks = state.tasks.filter(t => t.id !== id);
+                state.coins += reward;
+                
+                SOUNDS.success.play();
+                SOUNDS.cash.play();
+                triggerConfetti();
+                showToast(`+${reward} Gold Earned! 🪙`);
+                aiReact('complete');
+                
+                updateUI();
+                renderQuests();
+                saveData();
+            }, 300);
         }
 
-        function evaluateTask(text) {
-            if (text.includes('video game') || text.includes('play')) return { reward: 0, tier: "ANGRY", color: "text-red-600", bg: "bg-red-50" };
-            const highEffort = ['exam', 'study', 'clean', 'workout', 'gym', 'run', 'homework', 'project', 'coding', 'math', 'work'];
-            if (highEffort.some(word => text.includes(word))) return { reward: Math.floor(Math.random() * 201) + 800, tier: "LEGENDARY", color: "text-sky-600", bg: "bg-sky-50" };
-            return { reward: Math.floor(Math.random() * 201) + 100, tier: "COMMON", color: "text-slate-500", bg: "bg-slate-100" };
+        function deleteTask(id) {
+            if(confirm("Abandon this quest?")) {
+                state.tasks = state.tasks.filter(t => t.id !== id);
+                renderQuests();
+                saveData();
+            }
         }
 
-        // --- TIMER LOGIC (WITH BACKGROUND FIX) ---
-        function toggleTimer() {
-            if (state.gameSeconds <= 0 && !state.isTimerActive) return;
-
-            state.isTimerActive = !state.isTimerActive;
-
-            if (state.isTimerActive) {
-                // Calculate future timestamp
-                state.endTime = Date.now() + (state.gameSeconds * 1000);
-                silentAudio.play().catch(() => console.log("Silent audio requires interaction first."));
+        // --- 6. SHOP & TIMER ---
+        function buyTicket() {
+            if(state.coins >= 1000) {
+                state.coins -= 1000;
+                state.tickets++;
+                SOUNDS.cash.play();
+                triggerConfetti({ particleCount: 50, spread: 50, origin: { y: 0.9 } });
+                showToast("Ticket Purchased! 🎟️");
+                updateUI(); saveData();
             } else {
-                // Save remaining seconds
+                SOUNDS.error.play();
+                showToast("Not enough gold! 💸");
+                aiReact('check_coins');
+            }
+        }
+
+        function useTicket() {
+            if(state.tickets > 0) {
+                state.tickets--;
+                if(state.isTimerActive) state.endTime += 3600000;
+                else state.gameSeconds += 3600;
+                
+                SOUNDS.magic.play();
+                showToast("Time Extended! ⏳");
+                updateUI(); saveData();
+            } else {
+                SOUNDS.error.play();
+                showToast("No tickets left! 🎟️");
+            }
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('toggleBtn');
+            const icon = btn.querySelector('i');
+            
+            if (!state.isTimerActive) {
+                if (state.gameSeconds <= 0) { showToast("Buy time first! ⏳"); return; }
+                state.isTimerActive = true;
+                state.endTime = Date.now() + (state.gameSeconds * 1000);
+                
+                btn.classList.remove('bg-white', 'dark:bg-slate-800', 'text-black', 'dark:text-white');
+                btn.classList.add('bg-sky-500', 'text-white', 'border-sky-600');
+                icon.className = "ph-fill ph-pause text-white animate-pulse";
+                showToast("Game Mode: ON 🎮");
+            } else {
+                state.isTimerActive = false;
                 state.gameSeconds = Math.max(0, Math.floor((state.endTime - Date.now()) / 1000));
                 state.endTime = null;
-                silentAudio.pause();
-                updateLockscreen("Timer Paused");
+                
+                btn.classList.add('bg-white', 'dark:bg-slate-800', 'text-black', 'dark:text-white');
+                btn.classList.remove('bg-sky-500', 'text-white', 'border-sky-600');
+                icon.className = "ph-fill ph-game-controller";
+                showToast("Game Mode: PAUSED ⏸️");
             }
-            
-            updateUI();
             saveData();
-        }
-
-        function updateLockscreen(timeStr) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: `Questify: ${timeStr}`,
-                    artist: 'Stay Focused! 🎮',
-                    album: 'Game Session Active',
-                    artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/3073/3073458.png', sizes: '512x512', type: 'image/png' }]
-                });
-            }
         }
 
         setInterval(() => {
             if (state.isTimerActive && state.endTime) {
                 const now = Date.now();
                 const remaining = Math.max(0, Math.floor((state.endTime - now) / 1000));
-
-                const h = Math.floor(remaining / 3600).toString().padStart(2, '0');
-                const m = Math.floor((remaining % 3600) / 60).toString().padStart(2, '0');
-                const s = (remaining % 60).toString().padStart(2, '0');
-                const timeStr = `${h}:${m}:${s}`;
-
-                document.getElementById('timerDisplay').innerText = timeStr;
-                updateLockscreen(timeStr);
-
+                
                 if (remaining <= 0) {
                     state.isTimerActive = false;
                     state.gameSeconds = 0;
                     state.endTime = null;
-                    silentAudio.pause();
-                    sounds.alarm.play();
-                    updateUI();
-                    alert("Game time is over! Back to quests! 🐰");
+                    toggleTimer();
+                    new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3').play();
+                    alert("TIME UP! Back to work! 🐰");
                 }
+                
+                updateTimerDisplay(remaining);
+            } else if (!state.isTimerActive) {
+                updateTimerDisplay(state.gameSeconds);
             }
         }, 1000);
 
-        // --- THEME & UI ---
-        function promptTheme(dark) {
-            pendingTheme = dark;
+        function updateTimerDisplay(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${h}:${m}`;
+        }
+
+        // --- 7. VISUALS & UTILS ---
+        function updateUI() {
+            document.getElementById('coinDisplay').innerText = state.coins.toLocaleString();
+            document.getElementById('ticketDisplay').innerText = state.tickets;
+        }
+
+        function triggerConfetti(opts = {}) {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#fbbf24', '#34d399', '#38bdf8'],
+                disableForReducedMotion: true,
+                ...opts
+            });
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="ph-bold ph-info"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        function handleThemeCommand(text) {
+            if(text.toLowerCase().includes('dark')) { promptTheme(true); return true; }
+            if(text.toLowerCase().includes('light')) { promptTheme(false); return true; }
+            return false;
+        }
+
+        function promptTheme(isDark) {
+            pendingTheme = isDark;
             document.getElementById('confirmationBox').classList.remove('hidden');
-            document.getElementById('confirmText').innerText = dark ? "Switch to Dark Mode?" : "Switch to Light Mode?";
-            speak('themePrompt', 'thinking');
+            document.getElementById('confirmText').innerText = isDark ? "Go Dark?" : "Go Light?";
         }
 
         function confirmTheme(yes) {
@@ -284,109 +795,42 @@
                 state.isDark = pendingTheme;
                 applyTheme();
                 saveData();
-                speak(state.isDark ? 'darkToggle' : 'lightToggle', 'happy');
-            }
-            pendingTheme = null;
-        }
-
-        function applyTheme() { document.body.classList.toggle('dark-mode', state.isDark); }
-
-        function renderQuests() {
-            const list = document.getElementById('questList');
-            list.innerHTML = '';
-            state.tasks.forEach(task => {
-                const card = document.createElement('div');
-                card.className = `glass-card border-2 ${task.reward === 0 ? 'border-red-500/50' : 'border-white/10'} p-5 rounded-3xl flex justify-between items-center shadow-sm`;
-                card.innerHTML = `
-                    <div class="max-w-[70%]">
-                        <span class="${task.bg} ${task.color} text-[8px] px-2 py-0.5 rounded-full font-black uppercase border border-current tracking-widest">${task.tier}</span>
-                        <p class="font-black text-sm mt-1 uppercase break-words">${task.text}</p>
-                        <p class="text-xs font-bold ${task.reward === 0 ? 'text-red-400' : 'text-amber-500'}">🪙 ${task.reward}</p>
-                    </div>
-                    <button onclick="completeTask(${task.id}, ${task.reward})" class="duo-btn ${task.reward === 0 ? 'bg-red-400 border-red-600' : 'bg-teal-400 border-teal-600'} text-white px-5 py-2 rounded-xl font-black text-xs uppercase shrink-0">DONE</button>
-                `;
-                list.appendChild(card);
-            });
-        }
-
-        function updateUI() {
-            document.getElementById('coinDisplay').innerText = state.coins;
-            document.getElementById('ticketDisplay').innerText = state.tickets;
-            const btn = document.getElementById('toggleBtn');
-            btn.className = state.isTimerActive ? "duo-btn bg-sky-500 border-sky-700 p-4 rounded-full text-white" : "duo-btn bg-white border-slate-200 p-4 rounded-full shadow-md text-slate-800";
-            
-            // Re-render timer display manually if paused
-            if(!state.isTimerActive) {
-                const h = Math.floor(state.gameSeconds / 3600).toString().padStart(2, '0');
-                const m = Math.floor((state.gameSeconds % 3600) / 60).toString().padStart(2, '0');
-                const s = (state.gameSeconds % 60).toString().padStart(2, '0');
-                document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
             }
         }
 
-        // --- DATA MANAGEMENT ---
-        function completeTask(id, reward) {
-            state.coins += reward;
-            state.tasks = state.tasks.filter(t => t.id !== id);
-            sounds.done.play();
-            speak('complete', 'happy');
-            updateUI(); renderQuests(); saveData();
-        }
-
-        function buyTicket() {
-            if (state.coins >= 1000) {
-                state.coins -= 1000; state.tickets++;
-                sounds.buy.play(); updateUI(); saveData();
-            } else {
-                speak('common', 'disappointed');
-            }
-        }
-
-        function useTicket() {
-            if (state.tickets > 0) {
-                state.tickets--; 
-                if (state.isTimerActive) {
-                    state.endTime += 3600000; // Add 1 hour to end timestamp
-                } else {
-                    state.gameSeconds += 3600;
-                }
-                sounds.buy.play(); updateUI(); saveData();
-            }
-        }
-
-        function isJibberish(text) {
-            if (text.length < 3) return true;
-            if (!/[aeiouy]/.test(text)) return true;
-            return false;
+        function applyTheme() {
+            document.body.classList.toggle('dark-mode', state.isDark);
         }
 
         function checkSecretCommand(input) {
-            document.getElementById('resetBtn').style.display = (input.value.toLowerCase() === 'reset') ? 'block' : 'none';
+            if(input.value.toLowerCase() === 'reset') document.getElementById('resetBtn').style.display = 'block';
+            else document.getElementById('resetBtn').style.display = 'none';
         }
 
         function triggerReset() {
-            if (confirm("Reset all progress? 🥺")) { localStorage.clear(); location.reload(); }
-        }
-
-        function saveData() { localStorage.setItem('questifyData_v3', JSON.stringify(state)); }
-
-        function loadData() {
-            const saved = localStorage.getItem('questifyData_v3');
-            if (saved) { 
-                state = JSON.parse(saved); 
-                // Recalculate background drift on load
-                if (state.isTimerActive && state.endTime) {
-                    const remaining = Math.floor((state.endTime - Date.now()) / 1000);
-                    if (remaining <= 0) {
-                        state.isTimerActive = false;
-                        state.gameSeconds = 0;
-                    }
-                } else {
-                    state.isTimerActive = false;
-                }
-                applyTheme(); renderQuests(); updateUI(); 
+            if(confirm("Delete EVERYTHING? Cannot be undone!")) {
+                localStorage.removeItem('questifyData_Ultimate');
+                location.reload();
             }
         }
+
+        function saveData() { localStorage.setItem('questifyData_Ultimate', JSON.stringify(state)); }
+        
+        function loadData() {
+            const data = localStorage.getItem('questifyData_Ultimate');
+            if(data) {
+                state = JSON.parse(data);
+                if(state.isTimerActive) {
+                    const now = Date.now();
+                    if(now >= state.endTime) { state.isTimerActive = false; state.gameSeconds = 0; }
+                }
+            }
+            applyTheme();
+            updateUI();
+            checkDailyQuests();
+            renderQuests();
+        }
+
         window.onload = loadData;
     </script>
 </body>
