@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questify: Ultimate Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Questify: Smart Edition</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,27 +16,25 @@
 
     <style>
         :root {
-            /* PURE BLACK FOR LIGHT MODE */
             --bg-flow-1: #e0f2fe;
             --bg-flow-2: #f0f9ff;
             --bg-flow-3: #eff6ff;
             --card-bg: rgba(255, 255, 255, 0.95);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --text-main: #000000; /* Pure Black */
-            --text-muted: #1a1a1a; /* Very Dark Gray */
-            --input-placeholder: #555555;
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-main: #000000;
+            --text-muted: #333333;
+            --input-placeholder: #666666;
         }
 
         .dark-mode {
-            /* PURE WHITE FOR DARK MODE */
             --bg-flow-1: #0f172a;
             --bg-flow-2: #1e1b4b;
             --bg-flow-3: #172554;
-            --card-bg: rgba(15, 23, 42, 0.9);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --text-main: #ffffff; /* Pure White */
-            --text-muted: #e5e5e5; /* Very Light Gray */
-            --input-placeholder: #a3a3a3;
+            --card-bg: rgba(15, 23, 42, 0.92);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: #cccccc;
+            --input-placeholder: #999999;
         }
 
         body {
@@ -45,8 +43,9 @@
             background-image: linear-gradient(-45deg, var(--bg-flow-1), var(--bg-flow-2), var(--bg-flow-3));
             animation: gradientBG 15s ease infinite;
             color: var(--text-main);
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, background-image 0.5s ease;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
         @keyframes gradientBG {
@@ -64,14 +63,14 @@
         .animate-float { animation: float 6s ease-in-out infinite; }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .animate-enter { animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
         @keyframes pop {
             0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+            50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
         .animate-pop { animation: pop 0.2s ease-out; }
@@ -82,7 +81,7 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 20px -5px var(--glass-border);
             transition: all 0.3s ease;
         }
 
@@ -90,65 +89,37 @@
             transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            cursor: pointer;
         }
         .btn-press:active { transform: scale(0.95); }
         
-        /* Shimmer Effect for Rare/Gold */
-        .shimmer {
-            position: relative;
-            overflow: hidden;
-        }
+        .shimmer { position: relative; overflow: hidden; }
         .shimmer::after {
             content: '';
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
             transform: translateX(-100%);
-            background-image: linear-gradient(
-                90deg, 
-                rgba(255, 255, 255, 0) 0, 
-                rgba(255, 255, 255, 0.4) 20%, 
-                rgba(255, 255, 255, 0.7) 60%, 
-                rgba(255, 255, 255, 0)
-            );
+            background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
             animation: shimmer 3s infinite;
         }
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
 
-        /* Placeholders */
         ::placeholder { color: var(--input-placeholder) !important; opacity: 1; }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
         
-        /* Toast Notification */
+        .xp-bar-container {
+            background: rgba(0,0,0,0.05);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .dark-mode .xp-bar-container { background: rgba(255,255,255,0.1); }
+
         #toast-container {
-            position: fixed;
-            bottom: 110px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 90%;
-            max-width: 400px;
+            position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+            z-index: 100; pointer-events: none; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;
         }
         .toast {
-            background: #000000;
-            color: #ffffff;
-            padding: 12px 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            font-size: 0.9rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            background: #000000; color: #ffffff;
+            padding: 12px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 10px;
             animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             border: 1px solid rgba(255,255,255,0.2);
         }
@@ -166,11 +137,18 @@
     </button>
 
     <!-- Header Stats -->
-    <header class="w-full max-w-md glass-card rounded-[2rem] p-3 mt-4 mb-6 flex justify-between items-center sticky top-2 z-40 animate-enter" style="animation-delay: 0s;">
+    <header class="w-full max-w-md glass-card rounded-[2rem] p-3 mt-4 mb-4 flex justify-between items-center sticky top-2 z-40 animate-enter relative">
+        
+        <!-- Streak Badge -->
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-600 text-white px-3 py-1 rounded-full shadow-lg border-2 border-white dark:border-slate-800 flex items-center gap-1 z-50 cursor-help" title="Daily Streak">
+            <i class="ph-fill ph-fire text-xs animate-pulse"></i>
+            <span id="streakDisplay" class="text-xs font-black">1</span>
+        </div>
+
         <!-- Coins -->
-        <div class="flex flex-col items-center w-1/3 border-r border-black/10 dark:border-white/20 group cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors py-1" onclick="aiReact('check_coins')">
+        <div class="flex flex-col items-center w-1/3 border-r border-black/10 dark:border-white/20 cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors py-1" onclick="aiReact('check_coins')">
             <div class="flex items-center gap-1.5 text-amber-500">
-                <i class="ph-fill ph-coins text-2xl drop-shadow-sm group-hover:scale-110 transition-transform"></i>
+                <i class="ph-fill ph-coins text-2xl drop-shadow-sm"></i>
                 <span id="coinDisplay" class="font-black text-xl tracking-tight" style="color: var(--text-main)">0</span>
             </div>
             <p class="text-[9px] font-extrabold uppercase tracking-widest mt-0.5" style="color: var(--text-muted)">Gold</p>
@@ -180,32 +158,43 @@
         <div class="flex flex-col items-center w-1/3">
             <div class="flex items-center gap-1.5 text-teal-600 dark:text-teal-400">
                 <i class="ph-duotone ph-clock-countdown text-2xl animate-pulse"></i>
-                <span id="timerDisplay" class="font-black text-xl tabular-nums tracking-tight" style="color: var(--text-main)">00:00</span>
+                <span id="timerDisplay" class="font-black text-xl tabular-nums tracking-tight" style="color: var(--text-main)">00:00:00</span>
             </div>
             <p class="text-[9px] font-extrabold uppercase tracking-widest mt-0.5" style="color: var(--text-muted)">Focus</p>
         </div>
 
         <!-- Tickets -->
-        <div class="flex flex-col items-center w-1/3 border-l border-black/10 dark:border-white/20 group cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors py-1" onclick="aiReact('check_tickets')">
+        <div class="flex flex-col items-center w-1/3 border-l border-black/10 dark:border-white/20 cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors py-1" onclick="aiReact('check_tickets')">
             <div class="flex items-center gap-1.5 text-sky-600 dark:text-sky-400">
-                <i class="ph-fill ph-ticket text-2xl drop-shadow-sm group-hover:rotate-12 transition-transform"></i>
+                <i class="ph-fill ph-ticket text-2xl drop-shadow-sm"></i>
                 <span id="ticketDisplay" class="font-black text-xl tracking-tight" style="color: var(--text-main)">0</span>
             </div>
             <p class="text-[9px] font-extrabold uppercase tracking-widest mt-0.5" style="color: var(--text-muted)">Passes</p>
         </div>
     </header>
 
-    <!-- Mascot Section -->
+    <!-- Mascot & Progression Section -->
     <div id="heroMascot" class="flex flex-col items-center mb-6 w-full max-w-md animate-enter" style="animation-delay: 0.1s;">
-        <div class="relative group">
-            <div id="bunnyFace" class="text-8xl drop-shadow-2xl animate-float cursor-pointer select-none transition-transform active:scale-90 active:rotate-3" onclick="interactMascot()">🐰</div>
-            <!-- Click Hint -->
-            <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm pointer-events-none">Poke me!</div>
+        <div class="relative group w-full flex flex-col items-center">
+            
+            <!-- The Face -->
+            <div id="bunnyFace" class="text-8xl drop-shadow-2xl animate-float cursor-pointer select-none transition-transform active:scale-90 active:rotate-3 z-10" onclick="interactMascot()">🐰</div>
+            
+            <!-- XP & Level -->
+            <div class="mt-3 w-full flex flex-col items-center z-10">
+                <div class="flex justify-between w-40 mb-1">
+                    <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted)">Lvl <span id="levelDisplay">1</span></span>
+                    <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted)">XP</span>
+                </div>
+                <div class="w-40 h-2.5 xp-bar-container rounded-full overflow-hidden border border-black/5 dark:border-white/5">
+                    <div id="xpBar" class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(167,139,250,0.5)]" style="width: 0%"></div>
+                </div>
+            </div>
         </div>
         
         <!-- Speech Bubble -->
-        <div class="glass-card rounded-2xl p-4 mt-4 relative w-full text-center transition-all duration-300 hover:scale-[1.02] shadow-md">
-            <!-- Theme Toggle Prompt (Hidden by default) -->
+        <div class="glass-card rounded-2xl p-4 mt-4 relative w-full text-center transition-all duration-300 hover:scale-[1.01] shadow-md">
+            <!-- Theme Toggle Prompt -->
             <div id="confirmationBox" class="hidden flex flex-col gap-3 mb-2 animate-enter">
                 <p class="font-bold text-sm text-indigo-600 dark:text-indigo-400 flex items-center justify-center gap-2">
                     <i class="ph-fill ph-palette"></i> <span id="confirmText">Switch theme?</span>
@@ -236,7 +225,7 @@
                     oninput="checkSecretCommand(this)" 
                     onkeydown="if(event.key==='Enter') addTask()" 
                     placeholder="Type a quest..." 
-                    class="bg-transparent w-full px-4 py-3 focus:outline-none font-bold placeholder:text-gray-500"
+                    class="bg-transparent w-full px-4 py-3 focus:outline-none font-bold"
                     style="color: var(--text-main);">
             </div>
 
@@ -247,12 +236,15 @@
     </div>
 
     <!-- Quest List -->
-    <div id="questList" class="w-full max-w-md space-y-3 pb-8">
+    <div id="questList" class="w-full max-w-md space-y-3 pb-8 min-h-[200px]">
         <!-- Quests inject here -->
     </div>
 
-    <!-- Bottom Spacer -->
-    <div class="h-24"></div>
+    <!-- Data Management (Footer Top) -->
+    <div class="w-full max-w-md flex justify-center gap-6 pb-28 opacity-40 hover:opacity-100 transition-opacity">
+        <button onclick="exportData()" class="text-[10px] font-bold uppercase tracking-wider underline flex items-center gap-1" style="color: var(--text-muted)"><i class="ph-bold ph-export"></i> Save</button>
+        <button onclick="importData()" class="text-[10px] font-bold uppercase tracking-wider underline flex items-center gap-1" style="color: var(--text-muted)"><i class="ph-bold ph-download-simple"></i> Load</button>
+    </div>
 
     <!-- Footer Controls -->
     <footer class="fixed bottom-0 w-full max-w-md glass-card border-t border-white/40 dark:border-white/10 p-4 pb-6 flex gap-4 rounded-t-[2.5rem] z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] animate-enter" style="animation-delay: 0.3s;">
@@ -290,95 +282,115 @@
             error: new Audio('https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'),
             cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
             magic: new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3'),
-            daily: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3')
+            daily: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
+            unlock: new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3')
         };
         Object.values(SOUNDS).forEach(s => s.volume = 0.4);
 
-        const FACES = { 
-            normal: "🐰", happy: "🤩", thinking: "🧐", disappointed: "😒", 
-            angry: "🤬", magic: "🧙‍♂️", rich: "🤑", sleep: "😴", cool: "😎",
-            shock: "🤯", love: "🥰"
-        };
-
         const DAILY_POOL = [
             "Drink a glass of water 💧", "Make the bed 🛏️", "5 mins stretching 🧘", 
-            "Read 10 pages of a book 📖", "Clear one desk surface 🧹", "Write down 3 goals 📝",
-            "Send a nice text 💬", "Do 20 jumping jacks 🏃", "Meditate for 5 mins 🧘‍♂️",
-            "Eat a fruit 🍎", "No phone for 30 mins 📵", "Clean inbox 📧",
-            "Water the plants 🌿", "Listen to a podcast 🎵", "Organize files 📂",
-            "Plan tomorrow 🗓️", "Walk outside 15m 🌳", "Deep breathe 2 min 🌬️",
-            "Clean screen 💻", "Save $5 today 🐖", "Study for 30 mins 📚", "Go to the gym 💪"
+            "Read 10 pages 📖", "Clear desk 🧹", "Write 3 goals 📝",
+            "Send nice text 💬", "20 jumping jacks 🏃", "Meditate 5 mins 🧘‍♂️",
+            "Eat fruit 🍎", "No phone 30 mins 📵", "Clean inbox 📧",
+            "Water plants 🌿", "Listen to podcast 🎵", "Organize files 📂",
+            "Plan tomorrow 🗓️", "Walk 15m 🌳", "Deep breathe 2 min 🌬️",
+            "Clean screen 💻", "Save $5 🐖", "Study 30 mins 📚", "Gym workout 💪"
         ];
-
-        const DIALOGUES = {
-            intro_morning: ["Rise and shine! ☀️", "Let's conquer the day! ☕", "Early bird gets the coins! 🐦"],
-            intro_night: ["Burning the midnight oil? 🌙", "Late night grind! 🦉", "Finish up and rest! 🛌"],
-            rich: ["Wow! Look at that gold! 🤑", "We are rich!! 💰", "Buy something nice! 🛍️"],
-            poor: ["We need more gold... 🥺", "Empty pockets... work harder! 📉"],
-            annoyed: ["Stop poking me! 👉", "I'm not a stress ball! 💢", "Focus on the tasks! 📜"],
-            encouragement: ["You're doing great! 🔥", "One step at a time! 👣", "Keep the streak alive! ⚡"],
-            rare: ["A QUEST FOR HEROES! ⚔️", "Big money, big effort! 🦕", "Legendary status! 🏆"],
-            daily: ["New Daily Quests added! ☀️", "Fresh tasks for a fresh day! 📅"],
-            complete: ["Crushed it! 🎉", "Easy peasy! 😎", "Another one bites the dust! 💨"]
-        };
 
         // --- 2. STATE MANAGEMENT ---
         let state = {
+            username: null,
             coins: 0,
             tickets: 0,
+            xp: 0,
+            level: 1,
+            streak: 1,
+            lastLoginDate: null,
             gameSeconds: 0,
             isTimerActive: false,
             endTime: null,
             tasks: [],
-            lastLoginDate: null,
             isDark: false
         };
 
         let mascotClicks = 0;
         let pendingTheme = null;
+        let originalTitle = document.title;
 
-        // --- 3. AI & INTERACTION ENGINE ---
-        function aiReact(trigger, extra = null) {
+        // --- 3. SMART DIALOGUES ---
+        const DIALOGUES = {
+            morning: [
+                "Good morning, {name}! ☀️", "Rise and shine, {name}! ☕", 
+                "Let's conquer the day early! 🐦", "The early bird gets the gold!", 
+                "Fresh day, fresh goals, {name}!"
+            ],
+            afternoon: [
+                "Keep the momentum going, {name}! 🚀", "Don't stop now, you're doing great! 💪", 
+                "Good afternoon! Stay focused!", "Hydrate and dominate! 💧", 
+                "Halfway through the day, {name}!"
+            ],
+            evening: [
+                "Good evening, {name}. Time to wrap up? 🌇", "Finish strong, {name}! 🦉", 
+                "Reflect on your wins today.", "Almost time to rest.", 
+                "You worked hard today, {name}."
+            ],
+            night: [
+                "Burning the midnight oil? 🕯️", "You should sleep soon, {name}. 😴", 
+                "Late night grind! Respect.", "Rest is important for XP too!", 
+                "Good night, {name}. Recharge."
+            ],
+            rich: ["We are wealthy, {name}! 💰", "Look at all this gold!", "Investment time?"],
+            poor: ["Funds are low, {name}... 🥺", "We need to work harder!", "A bit broke, aren't we?"],
+            annoyed: ["Stop poking me, {name}! 👉", "I am not a toy!", "Focus on work, not me! 💢"],
+            encouragement: ["I believe in you, {name}! 🔥", "You are unstoppable!", "Legendary effort!"],
+            rare: ["A HEROIC QUEST! ⚔️", "Big rewards ahead, {name}!", "This one is tough but worth it!"],
+            levelup: ["LEVEL UP! You're stronger now! 🚀", "New heights reached! 💪", "Evolution complete!"],
+            welcome_back: ["Welcome back, {name}! 👋", "Ready to work?", "I missed you, {name}."]
+        };
+
+        // --- 4. AI & INTERACTION ---
+        function formatMessage(text) {
+            if (state.username && Math.random() < 0.4) {
+                return text.replace('{name}', state.username);
+            }
+            return text.replace(', {name}', '').replace(' {name}', '');
+        }
+
+        function aiReact(trigger) {
             let msg = "";
-            let face = "normal";
+            let face = "🐰";
+            const hour = new Date().getHours();
 
             switch(trigger) {
                 case 'login':
-                    const hour = new Date().getHours();
-                    const timeKey = hour < 12 ? 'intro_morning' : 'intro_night';
-                    msg = getRandom(DIALOGUES[timeKey]);
-                    face = hour < 12 ? 'happy' : 'cool';
+                    if (hour >= 5 && hour < 12) msg = getRandom(DIALOGUES.morning);
+                    else if (hour >= 12 && hour < 18) msg = getRandom(DIALOGUES.afternoon);
+                    else if (hour >= 18 && hour < 23) msg = getRandom(DIALOGUES.evening);
+                    else msg = getRandom(DIALOGUES.night);
                     break;
                 case 'check_coins':
-                    if(state.coins > 5000) { msg = getRandom(DIALOGUES.rich); face = "rich"; }
-                    else if(state.coins < 500) { msg = getRandom(DIALOGUES.poor); face = "disappointed"; }
-                    else { msg = "Keep saving up!"; face = "thinking"; }
+                    if(state.coins > 5000) { msg = getRandom(DIALOGUES.rich); face = "🤑"; }
+                    else if(state.coins < 500) { msg = getRandom(DIALOGUES.poor); face = "😒"; }
+                    else { msg = "Saving up for something big?"; face = "🧐"; }
                     break;
                 case 'poke':
                     mascotClicks++;
-                    if(mascotClicks > 5) { msg = getRandom(DIALOGUES.annoyed); face = "angry"; }
-                    else if(mascotClicks > 2) { msg = "Hey! Watch the fur!"; face = "thinking"; }
-                    else { msg = getRandom(DIALOGUES.encouragement); face = "love"; }
+                    if(mascotClicks > 5) { msg = getRandom(DIALOGUES.annoyed); face = "🤬"; }
+                    else if(mascotClicks > 2) { msg = "Hey! Watch the fur!"; face = "🧐"; }
+                    else { msg = getRandom(DIALOGUES.encouragement); face = "🥰"; }
                     setTimeout(() => mascotClicks = 0, 5000);
                     break;
-                case 'daily':
-                    msg = getRandom(DIALOGUES.daily);
-                    face = "happy";
-                    break;
-                case 'complete':
-                    msg = getRandom(DIALOGUES.complete);
-                    face = "happy";
-                    break;
-                case 'rare':
-                    msg = getRandom(DIALOGUES.rare);
-                    face = "shock";
-                    break;
+                case 'daily': msg = "New Daily Quests added! 📅"; face = "🤩"; break;
+                case 'complete': msg = "Quest Complete! Well done! 🎉"; face = "🤩"; break;
+                case 'rare': msg = getRandom(DIALOGUES.rare); face = "🤯"; break;
+                case 'levelup': msg = getRandom(DIALOGUES.levelup); face = "🧙‍♂️"; break;
+                case 'name_set': msg = `Nice to meet you, ${state.username}!`; face = "👋"; break;
             }
 
-            updateMascot(msg, face);
+            updateMascot(formatMessage(msg), face);
         }
 
-        function updateMascot(text, faceKey) {
+        function updateMascot(text, faceEmoji) {
             const bubble = document.getElementById('mascotText');
             const face = document.getElementById('bunnyFace');
             
@@ -388,13 +400,13 @@
                 bubble.style.opacity = 1;
             }, 200);
 
-            face.innerText = FACES[faceKey] || FACES.normal;
+            face.innerText = faceEmoji;
             face.classList.remove('animate-float');
             void face.offsetWidth; 
             face.classList.add('animate-pop');
             
             setTimeout(() => {
-                face.innerText = FACES.normal;
+                face.innerText = "🐰";
                 face.classList.remove('animate-pop');
                 face.classList.add('animate-float');
             }, 3000);
@@ -407,14 +419,55 @@
 
         function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-        // --- 4. DAILY QUEST LOGIC ---
+        // --- 5. PROGRESSION SYSTEM (SCALING) ---
+        function getXPThreshold(lvl) {
+            return Math.floor(300 + (Math.pow(lvl, 1.8) * 200));
+        }
+
+        function getLevelProgress() {
+            const currentLevelThreshold = getXPThreshold(state.level);
+            const prevLevelThreshold = state.level === 1 ? 0 : getXPThreshold(state.level - 1);
+            
+            const xpInLevel = state.xp - prevLevelThreshold;
+            const xpNeededForLevel = currentLevelThreshold - prevLevelThreshold;
+            
+            let pct = (xpInLevel / xpNeededForLevel) * 100;
+            return Math.max(0, Math.min(100, pct));
+        }
+
+        function addXP(amount) {
+            state.xp += amount;
+            
+            let threshold = getXPThreshold(state.level);
+            
+            if (state.xp >= threshold) {
+                state.level++;
+                state.tickets += 1; 
+                SOUNDS.unlock.play();
+                triggerConfetti({ particleCount: 150, spread: 100 });
+                showToast(`LEVEL UP! You are Level ${state.level}! 🎟️ +1`);
+                aiReact('levelup');
+            }
+        }
+
         function checkDailyQuests() {
             const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+
             if (state.lastLoginDate !== today) {
+                if (state.lastLoginDate === yesterday) {
+                    state.streak++;
+                    showToast(`🔥 Streak: ${state.streak} Days!`);
+                } else if (state.lastLoginDate) {
+                    state.streak = 1; 
+                    showToast("Streak Reset 😢");
+                } else {
+                    state.streak = 1;
+                }
+
                 generateDailyQuests();
                 state.lastLoginDate = today;
                 saveData();
-                showToast("New Daily Quests Available! ☀️");
             } else {
                 aiReact('login');
             }
@@ -431,7 +484,7 @@
             }
 
             const shuffled = DAILY_POOL.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, 8); // Pick 8
+            const selected = shuffled.slice(0, 5);
 
             selected.forEach((text, i) => {
                 const exists = state.tasks.some(t => t.text === text && !t.completed);
@@ -439,21 +492,20 @@
                     setTimeout(() => {
                         const taskData = evaluateTask(text);
                         taskData.isDaily = true;
-                        taskData.isManual = false; // Cannot edit
+                        taskData.isManual = false;
                         createTaskObject(text, taskData);
                     }, i * 100);
                 }
             });
-
-            aiReact('daily');
+            if(force) aiReact('daily');
         }
 
-        // --- 5. REWARD & TIER LOGIC ---
+        // --- 6. TASK LOGIC ---
         function evaluateTask(text) {
             const lower = text.toLowerCase();
             
             if (lower.includes('game') || lower.includes('play') || lower.includes('netflix')) 
-                return { reward: 0, tier: "FORBIDDEN", color: "red", icon: "ph-warning-octagon" };
+                return { reward: 0, tier: "FORBIDDEN", icon: "ph-warning-octagon" };
             
             const rareKeywords = ['gym', 'study', 'work', 'project', 'run', 'code', 'exam', 'assignment', 'clean house', 'meeting', 'marathon'];
             if (rareKeywords.some(w => lower.includes(w))) {
@@ -485,7 +537,7 @@
                 id: Date.now() + Math.random(),
                 text: text,
                 ...evalData,
-                isManual: evalData.isManual !== undefined ? evalData.isManual : true, // Default to true if not specified
+                isManual: evalData.isManual !== undefined ? evalData.isManual : true,
                 createdAt: Date.now()
             };
             state.tasks.push(task);
@@ -493,7 +545,7 @@
             renderQuests();
             
             const list = document.getElementById('questList');
-            setTimeout(() => list.lastElementChild?.scrollIntoView({ behavior: 'smooth' }), 100);
+            if(!evalData.isDaily) setTimeout(() => list.lastElementChild?.scrollIntoView({ behavior: 'smooth' }), 100);
         }
 
         function addTask() {
@@ -503,9 +555,21 @@
 
             if (text.toLowerCase() === 'reset') { input.value=''; return; }
             if (handleThemeCommand(text)) { input.value=''; return; }
+            
+            if (text.toLowerCase().startsWith('name ')) {
+                const newName = text.substring(5).trim();
+                if(newName) {
+                    state.username = newName;
+                    saveData();
+                    aiReact('name_set');
+                    showToast("Name Updated! 📝");
+                }
+                input.value='';
+                return;
+            }
 
             const evalData = evaluateTask(text);
-            evalData.isManual = true; // User created this
+            evalData.isManual = true; 
             createTaskObject(text, evalData);
             
             SOUNDS.pop.play();
@@ -513,38 +577,11 @@
             input.value = '';
         }
 
-        // --- NEW: EDIT FUNCTION ---
-        function editTask(id) {
-            const task = state.tasks.find(t => t.id === id);
-            if (!task) return;
-
-            // Prompt user for new text
-            const newText = prompt("Edit your quest:", task.text);
-            
-            if (newText && newText.trim() !== "" && newText !== task.text) {
-                task.text = newText.trim();
-                
-                // Re-evaluate reward/tier based on new text
-                const newEval = evaluateTask(task.text);
-                task.tier = newEval.tier;
-                task.reward = newEval.reward;
-                task.icon = newEval.icon;
-                
-                // If it became forbidden or rare, play sound
-                if (task.tier === "FORBIDDEN") SOUNDS.error.play();
-                if (task.tier === "RARE") SOUNDS.magic.play();
-
-                saveData();
-                renderQuests();
-                showToast("Quest Updated! 📝");
-            }
-        }
-
         function renderQuests() {
             const list = document.getElementById('questList');
             list.innerHTML = ''; 
 
-            const sortedTasks = [...state.tasks].sort((a, b) => {
+            const sortedTasks = state.tasks.sort((a, b) => {
                 if (a.isDaily && !b.isDaily) return -1;
                 if (!a.isDaily && b.isDaily) return 1;
                 return b.reward - a.reward;
@@ -554,48 +591,27 @@
                 const isRare = task.tier === 'RARE';
                 const isMedium = task.tier === 'MEDIUM';
                 const isForbidden = task.tier === 'FORBIDDEN';
-                const isManual = task.isManual !== false; // Backward compatibility for old tasks
                 
-                // Style Logic
                 let borderColor, badgeClass, iconBg;
-                
                 if (isForbidden) {
-                    borderColor = 'border-red-500';
-                    badgeClass = 'bg-red-100 text-red-700';
-                    iconBg = 'bg-red-100 text-red-600';
+                    borderColor = 'border-red-500'; badgeClass = 'bg-red-100 text-red-700'; iconBg = 'bg-red-100 text-red-600';
                 } else if (isRare) {
-                    borderColor = 'border-purple-500';
-                    badgeClass = 'bg-purple-100 text-purple-900';
-                    iconBg = 'bg-purple-100 text-purple-700';
+                    borderColor = 'border-purple-500'; badgeClass = 'bg-purple-100 text-purple-900'; iconBg = 'bg-purple-100 text-purple-700';
                 } else if (isMedium) {
-                    borderColor = 'border-blue-500';
-                    badgeClass = 'bg-blue-100 text-blue-900';
-                    iconBg = 'bg-blue-100 text-blue-700';
+                    borderColor = 'border-blue-500'; badgeClass = 'bg-blue-100 text-blue-900'; iconBg = 'bg-blue-100 text-blue-700';
                 } else {
-                    // Common
-                    borderColor = 'border-slate-400 dark:border-slate-500';
-                    badgeClass = 'bg-slate-200 text-black';
-                    iconBg = 'bg-slate-200 text-black';
+                    borderColor = 'border-slate-400 dark:border-slate-500'; badgeClass = 'bg-slate-200 text-black'; iconBg = 'bg-slate-200 text-black';
                 }
 
                 const div = document.createElement('div');
-                div.className = `glass-card border-l-4 ${borderColor} p-4 rounded-2xl flex justify-between items-center mb-3 animate-enter group relative overflow-hidden ${isRare ? 'shimmer' : ''}`;
+                div.className = `glass-card border-l-4 ${borderColor} p-4 rounded-2xl flex justify-between items-center animate-enter group relative overflow-hidden ${isRare ? 'shimmer' : ''}`;
                 div.id = `task-${task.id}`;
                 
                 const tagHTML = `<span class="text-[9px] font-black uppercase tracking-wider py-0.5 px-2 rounded-md ${badgeClass}">${task.tier}</span>`;
-
-                // Edit Button HTML (Only for manual tasks)
-                const editBtn = isManual ? `
-                    <button onclick="editTask(${task.id})" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-blue-500" title="Edit Quest">
-                        <i class="ph-bold ph-pencil-simple"></i>
-                    </button>
-                ` : '';
-
+                
                 div.innerHTML = `
                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center shrink-0">
-                            <i class="ph-fill ${task.icon} text-xl"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center shrink-0"><i class="ph-fill ${task.icon} text-xl"></i></div>
                         <div class="flex-1 min-w-0">
                             <p class="font-bold text-sm truncate pr-2" style="color: var(--text-main)">${task.text}</p>
                             <div class="flex items-center gap-2 mt-1">
@@ -607,76 +623,63 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="flex gap-0">
-                        ${editBtn}
-                        <button onclick="deleteTask(${task.id})" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-red-500" title="Delete">
-                            <i class="ph-bold ph-trash"></i>
-                        </button>
-                        <button onclick="completeTask(${task.id}, ${task.reward})" class="ml-2 btn-press w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${isForbidden ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-br from-teal-500 to-emerald-600'}" ${isForbidden ? 'disabled' : ''}>
-                            <i class="ph-bold ph-check text-lg"></i>
-                        </button>
+                    <div class="flex gap-0 items-center">
+                        <button onclick="deleteTask(${task.id})" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-red-500"><i class="ph-bold ph-trash"></i></button>
+                        <button onclick="completeTask(${task.id}, ${task.reward})" class="ml-2 btn-press w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${isForbidden ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-br from-teal-500 to-emerald-600'}" ${isForbidden ? 'disabled' : ''}><i class="ph-bold ph-check text-lg"></i></button>
                     </div>
                 `;
                 list.appendChild(div);
             });
             
-            // Empty State
             if(state.tasks.length === 0) {
                 list.innerHTML = `
                     <div class="text-center p-8 opacity-60 animate-enter" style="color: var(--text-muted)">
                         <i class="ph-duotone ph-clipboard-text text-6xl mb-2"></i>
                         <p class="font-bold">All caught up!</p>
                         <p class="text-xs">Enjoy your free time.</p>
-                    </div>
-                `;
+                    </div>`;
             }
         }
 
         function completeTask(id, reward) {
             const el = document.getElementById(`task-${id}`);
-            if(el) {
-                el.style.transform = "scale(0.95) translateX(10px)";
-                el.style.opacity = "0";
-            }
+            if(el) { el.style.transform = "scale(0.95) translateX(10px)"; el.style.opacity = "0"; }
 
             setTimeout(() => {
                 state.tasks = state.tasks.filter(t => t.id !== id);
                 state.coins += reward;
                 
+                const xpGain = Math.floor(reward * 0.4); 
+                addXP(xpGain);
+
                 SOUNDS.success.play();
                 SOUNDS.cash.play();
                 triggerConfetti();
-                showToast(`+${reward} Gold Earned! 🪙`);
+                showToast(`+${reward} Gold | +${xpGain} XP`);
                 aiReact('complete');
                 
-                updateUI();
-                renderQuests();
-                saveData();
+                updateUI(); renderQuests(); saveData();
             }, 300);
         }
 
         function deleteTask(id) {
             if(confirm("Abandon this quest?")) {
                 state.tasks = state.tasks.filter(t => t.id !== id);
-                renderQuests();
-                saveData();
+                renderQuests(); saveData();
             }
         }
 
-        // --- 6. SHOP & TIMER ---
+        // --- 7. SHOP & UTILS ---
         function buyTicket() {
             if(state.coins >= 1000) {
                 state.coins -= 1000;
                 state.tickets++;
                 SOUNDS.cash.play();
-                triggerConfetti({ particleCount: 50, spread: 50, origin: { y: 0.9 } });
+                triggerConfetti({ particleCount: 50, origin: { y: 0.9 } });
                 showToast("Ticket Purchased! 🎟️");
                 updateUI(); saveData();
             } else {
-                SOUNDS.error.play();
-                showToast("Not enough gold! 💸");
-                aiReact('check_coins');
+                SOUNDS.error.play(); showToast("Need 1000 Gold! 💸"); aiReact('check_coins');
             }
         }
 
@@ -685,13 +688,9 @@
                 state.tickets--;
                 if(state.isTimerActive) state.endTime += 3600000;
                 else state.gameSeconds += 3600;
-                
-                SOUNDS.magic.play();
-                showToast("Time Extended! ⏳");
-                updateUI(); saveData();
+                SOUNDS.magic.play(); showToast("Time Extended! ⏳"); updateUI(); saveData();
             } else {
-                SOUNDS.error.play();
-                showToast("No tickets left! 🎟️");
+                SOUNDS.error.play(); showToast("No tickets left! 🎟️");
             }
         }
 
@@ -701,6 +700,12 @@
             
             if (!state.isTimerActive) {
                 if (state.gameSeconds <= 0) { showToast("Buy time first! ⏳"); return; }
+                
+                // Request Notification Permission
+                if ("Notification" in window && Notification.permission !== "granted") {
+                    Notification.requestPermission();
+                }
+
                 state.isTimerActive = true;
                 state.endTime = Date.now() + (state.gameSeconds * 1000);
                 
@@ -712,6 +717,7 @@
                 state.isTimerActive = false;
                 state.gameSeconds = Math.max(0, Math.floor((state.endTime - Date.now()) / 1000));
                 state.endTime = null;
+                document.title = originalTitle; // Reset title
                 
                 btn.classList.add('bg-white', 'dark:bg-slate-800', 'text-black', 'dark:text-white');
                 btn.classList.remove('bg-sky-500', 'text-white', 'border-sky-600');
@@ -721,48 +727,65 @@
             saveData();
         }
 
+        // --- UPDATED TIMER LOGIC ---
         setInterval(() => {
             if (state.isTimerActive && state.endTime) {
                 const now = Date.now();
+                // Rely on Date.now() for accuracy (Works in background)
                 const remaining = Math.max(0, Math.floor((state.endTime - now) / 1000));
                 
+                // Update Title for Desktop Tabs
+                const timeString = formatTimeString(remaining);
+                document.title = `${timeString} - Focus`;
+
                 if (remaining <= 0) {
-                    state.isTimerActive = false;
-                    state.gameSeconds = 0;
-                    state.endTime = null;
+                    state.isTimerActive = false; state.gameSeconds = 0; state.endTime = null;
+                    document.title = "Time's Up!";
                     toggleTimer();
+                    
+                    // Alert Logic
                     new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3').play();
+                    
+                    // Send System Notification (Works on Lock Screen if allowed)
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("Questify", { 
+                            body: "TIME'S UP! Great work! 🐰", 
+                            icon: "https://unpkg.com/@phosphor-icons/web/assets/duotone/clock-countdown-duotone.svg" 
+                        });
+                    }
+                    
                     alert("TIME UP! Back to work! 🐰");
+                    document.title = originalTitle;
                 }
-                
                 updateTimerDisplay(remaining);
             } else if (!state.isTimerActive) {
                 updateTimerDisplay(state.gameSeconds);
+                document.title = originalTitle;
             }
         }, 1000);
 
+        // Updated Helper for HH:MM:SS
         function updateTimerDisplay(seconds) {
-            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toString().padStart(2, '0');
-            document.getElementById('timerDisplay').innerText = `${h}:${m}`;
+            document.getElementById('timerDisplay').innerText = formatTimeString(seconds);
         }
 
-        // --- 7. VISUALS & UTILS ---
+        function formatTimeString(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0'); // Added Seconds
+            return `${h}:${m}:${s}`;
+        }
+
         function updateUI() {
             document.getElementById('coinDisplay').innerText = state.coins.toLocaleString();
             document.getElementById('ticketDisplay').innerText = state.tickets;
+            document.getElementById('levelDisplay').innerText = state.level;
+            document.getElementById('streakDisplay').innerText = state.streak;
+            document.getElementById('xpBar').style.width = `${getLevelProgress()}%`;
         }
 
         function triggerConfetti(opts = {}) {
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#fbbf24', '#34d399', '#38bdf8'],
-                disableForReducedMotion: true,
-                ...opts
-            });
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#34d399', '#38bdf8'], disableForReducedMotion: true, ...opts });
         }
 
         function showToast(msg) {
@@ -777,30 +800,22 @@
             }, 2500);
         }
 
+        // Theme & Data Logic
         function handleThemeCommand(text) {
             if(text.toLowerCase().includes('dark')) { promptTheme(true); return true; }
             if(text.toLowerCase().includes('light')) { promptTheme(false); return true; }
             return false;
         }
-
         function promptTheme(isDark) {
             pendingTheme = isDark;
             document.getElementById('confirmationBox').classList.remove('hidden');
             document.getElementById('confirmText').innerText = isDark ? "Go Dark?" : "Go Light?";
         }
-
         function confirmTheme(yes) {
             document.getElementById('confirmationBox').classList.add('hidden');
-            if (yes) {
-                state.isDark = pendingTheme;
-                applyTheme();
-                saveData();
-            }
+            if (yes) { state.isDark = pendingTheme; applyTheme(); saveData(); }
         }
-
-        function applyTheme() {
-            document.body.classList.toggle('dark-mode', state.isDark);
-        }
+        function applyTheme() { document.body.classList.toggle('dark-mode', state.isDark); }
 
         function checkSecretCommand(input) {
             if(input.value.toLowerCase() === 'reset') document.getElementById('resetBtn').style.display = 'block';
@@ -809,26 +824,66 @@
 
         function triggerReset() {
             if(confirm("Delete EVERYTHING? Cannot be undone!")) {
-                localStorage.removeItem('questifyData_Ultimate');
+                localStorage.removeItem('questifyData_Smart');
                 location.reload();
             }
         }
-
-        function saveData() { localStorage.setItem('questifyData_Ultimate', JSON.stringify(state)); }
         
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", "questify_save.json");
+            document.body.appendChild(dlAnchor); dlAnchor.click(); dlAnchor.remove();
+        }
+        function importData() {
+            const input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = re => {
+                    try {
+                        const parsed = JSON.parse(re.target.result);
+                        if(parsed.coins !== undefined) { state = parsed; saveData(); location.reload(); }
+                        else alert("Invalid File");
+                    } catch(err) { alert("Error reading file"); }
+                }
+            };
+            input.click();
+        }
+
+        function saveData() { localStorage.setItem('questifyData_Smart', JSON.stringify(state)); }
+        
+        function askName() {
+            let name = prompt("Hello Hero! What should I call you?");
+            if (name && name.trim()) {
+                state.username = name.trim();
+                saveData();
+                aiReact('name_set');
+            } else {
+                state.username = "Hero";
+            }
+        }
+
         function loadData() {
-            const data = localStorage.getItem('questifyData_Ultimate');
+            const data = localStorage.getItem('questifyData_Smart');
             if(data) {
-                state = JSON.parse(data);
-                if(state.isTimerActive) {
-                    const now = Date.now();
-                    if(now >= state.endTime) { state.isTimerActive = false; state.gameSeconds = 0; }
+                const loaded = JSON.parse(data);
+                state = { ...state, ...loaded };
+                if(state.isTimerActive && state.endTime && Date.now() >= state.endTime) {
+                    state.isTimerActive = false; state.gameSeconds = 0;
                 }
             }
-            applyTheme();
-            updateUI();
-            checkDailyQuests();
+            
+            applyTheme(); 
+            updateUI(); 
+            checkDailyQuests(); 
             renderQuests();
+
+            if (!state.username) {
+                setTimeout(askName, 500);
+            }
         }
 
         window.onload = loadData;
