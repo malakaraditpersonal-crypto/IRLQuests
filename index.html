@@ -45,6 +45,7 @@
             background-color: var(--bg-base);
             color: var(--text-main);
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
             overflow-x: hidden;
             overscroll-behavior-y: none;
         }
@@ -67,6 +68,8 @@
         .btn-interact {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             animation: slow-float 4s ease-in-out infinite;
+            min-height: 44px; /* Touch-friendly */
+            min-width: 44px;
         }
         .btn-interact:hover {
             transform: scale(1.05) translateY(-2px);
@@ -158,6 +161,38 @@
             outline: none;
         }
 
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .glass-panel {
+                padding: 0.75rem;
+                margin: 0 0.5rem;
+            }
+            .btn-interact {
+                min-height: 48px;
+                min-width: 48px;
+            }
+            #mainUI {
+                padding: 0 1rem;
+            }
+            #mainFooter {
+                padding: 0 1rem;
+            }
+            .timer-fab {
+                width: 20px;
+                height: 20px;
+            }
+            .xp-bar-bg {
+                height: 6px;
+            }
+            .ai-text-cursor {
+                font-size: 0.875rem;
+            }
+            #toast-zone {
+                width: 95%;
+                max-width: none;
+            }
+        }
+
     </style>
 </head>
 <body class="flex flex-col items-center min-h-screen pb-32">
@@ -219,7 +254,7 @@
             </div>
 
             <!-- AI Communicator -->
-            <div class="flex items-start gap-3 border-b border-white/10 pb-4 pr-32">
+            <div class="flex items-start gap-3 border-b border-white/10 pb-4 pr-24">
                 <div class="w-12 h-12 rounded border border-neon-blue bg-black flex items-center justify-center shrink-0 shadow-[0_0_10px_var(--neon-blue)]">
                     <i class="ph-fill ph-cpu text-neon-blue text-2xl"></i>
                 </div>
@@ -286,6 +321,7 @@
             <div class="relative flex-1">
                 <input type="text" id="taskInput" 
                        onkeydown="if(event.key==='Enter') addUserTask()"
+                       oninput="checkCommands(this)"
                        placeholder="Define objective... (or type 'reset')" 
                        class="w-full cyber-input pl-4 pr-12 py-3 rounded text-white placeholder-gray-500 font-medium text-sm transition-all shadow-lg uppercase">
                 <button onclick="addUserTask()" class="absolute right-1 top-1 w-10 h-10 bg-black/50 hover:bg-theme-primary text-theme-primary hover:text-black border border-theme-primary rounded flex items-center justify-center transition-all z-10 btn-interact">
@@ -410,8 +446,8 @@
             coins: 0,
             streak: 1,
             reboots: 0, 
-            optimization: 0, 
-            tickets: 0, 
+            optimization: 0, // out of 5
+            tickets: 0, // Kept as Passes/Boosts
             tasks:[],
             userRecurringTasks:[],
             isTimerActive: false,
@@ -473,6 +509,11 @@
 
             if("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
+            }
+            
+            // Register service worker for offline support
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered')).catch(err => console.log('SW failed', err));
             }
             
             checkDailyReset();
@@ -542,6 +583,7 @@
 
         // --- 4. CORE MECHANICS ---
         function isModuleActive(id) {
+            // Clean up expired modules silently
             const now = Date.now();
             state.activeModules = state.activeModules.filter(m => m.expiresAt > now);
             return state.activeModules.some(m => m.id === id);
@@ -615,17 +657,6 @@
             const val = input.value.trim();
             if(!val) return;
 
-            // Handle Reset Command Here
-            if(val.toLowerCase() === 'reset') {
-                input.value = '';
-                if(confirm("CRITICAL WARNING: RESET PROTOCOL INITIATED.\nAre you sure you want to erase all user data?")) {
-                    document.body.classList.add('glitch-anim');
-                    showToast("SYSTEM PURGING...", "ph-warning");
-                    setTimeout(systemPurge, 1500);
-                }
-                return;
-            }
-
             createTaskObj(val, 'Personal', true, isHighPriorityActive);
             
             if(!state.userRecurringTasks.includes(val)) {
@@ -682,7 +713,7 @@
                     state.optimization -= 5;
                     state.reboots++;
                     state.coins += 2000;
-                    state.tickets++; 
+                    state.tickets++; // Bonus pass on reboot
                     aiSpeak('levelUp');
                     SOUNDS.complete.play();
                     confetti({ particleCount: 200, spread: 100, colors:['#00f3ff', '#bc13fe', '#fcee0a'] });
@@ -756,52 +787,19 @@
                 const div = document.createElement('div');
                 if (mod) {
                     const item = SHOP_ITEMS.find(x => x.id === mod.id);
-                    div.className = `w-10 h-10 bg-black border border-neon-blue rounded flex flex-col items-center justify-center relative group shadow-[0_0_8px_rgba(0,243,255,0.3)]`;
+                    div.className = `w-8 h-8 bg-black border border-neon-blue rounded flex flex-col items-center justify-center relative group shadow-[0_0_8px_rgba(0,243,255,0.3)]`;
                     div.innerHTML = `
-                        <i class="ph-fill ${item.icon} text-neon-blue text-[14px] mb-[10px]"></i>
-                        <span id="mod-time-${mod.id}" class="absolute bottom-0.5 text-[8px] font-mono text-neon-blue font-bold tracking-tight text-center w-full z-10">--:--</span>
+                        <i class="ph-fill ${item.icon} text-neon-blue text-sm"></i>
                         <!-- Tooltip -->
-                        <div class="absolute top-12 right-0 bg-black border border-gray-700 text-white text-[9px] font-mono px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-50">
-                            ${item.name}
+                        <div class="absolute -bottom-8 right-0 bg-black border border-gray-700 text-white text-[9px] font-mono px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-50">
+                            ${item.name} active
                         </div>
                     `;
                 } else {
-                    div.className = `w-10 h-10 bg-black/50 border border-gray-800 border-dashed rounded flex items-center justify-center`;
+                    div.className = `w-8 h-8 bg-black/50 border border-gray-800 border-dashed rounded flex items-center justify-center`;
                     div.innerHTML = `<span class="text-[8px] text-gray-600 font-mono">SLOT</span>`;
                 }
                 container.appendChild(div);
-            }
-            updateModuleTimers();
-        }
-
-        function updateModuleTimers() {
-            const now = Date.now();
-            let needsReRender = false;
-
-            state.activeModules.forEach(mod => {
-                const el = document.getElementById(`mod-time-${mod.id}`);
-                if (el) {
-                    const remain = mod.expiresAt - now;
-                    if (remain <= 0) {
-                        needsReRender = true;
-                    } else {
-                        const totalSecs = Math.floor(remain / 1000);
-                        const h = Math.floor(totalSecs / 3600);
-                        const m = Math.floor((totalSecs % 3600) / 60);
-                        const s = totalSecs % 60;
-                        if (h > 0) {
-                            el.innerText = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                        } else {
-                            el.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                        }
-                    }
-                }
-            });
-
-            if (needsReRender) {
-                state.activeModules = state.activeModules.filter(m => m.expiresAt > now);
-                renderModuleSlots();
-                saveState();
             }
         }
 
@@ -1068,7 +1066,6 @@
         }
 
         setInterval(() => {
-            // Main focus timer
             let secs = state.gameSeconds;
             if (state.isTimerActive && state.endTime) {
                 secs = Math.max(0, Math.floor((state.endTime - Date.now()) / 1000));
@@ -1089,14 +1086,20 @@
             const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
             const s = (secs % 60).toString().padStart(2, '0');
             document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
-
-            // Also update module slot timers
-            updateModuleTimers();
         }, 1000);
 
         // --- 8. DATA MGMT & RESET PROTOCOL ---
         function saveState() {
             localStorage.setItem('questify_nexus_data', JSON.stringify(state));
+        }
+
+        function checkCommands(input) {
+            if(input.value.trim().toLowerCase() === 'reset') {
+                input.value = '';
+                document.body.classList.add('glitch-anim');
+                showToast("CRITICAL WARNING: RESET PROTOCOL INITIATED.", "ph-warning");
+                setTimeout(systemPurge, 1500);
+            }
         }
 
         function systemPurge() {
@@ -1105,13 +1108,15 @@
         }
 
         // --- 9. 3D BACKGROUND (AMBIENT HYPERSPACE) ---
+        const isMobile = window.innerWidth < 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true, antialias: true });
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true, antialias: !isMobile });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 2));
 
         const particles = new THREE.BufferGeometry();
-        const count = 1000;
+        const count = isMobile ? 300 : 1000;
         const posArray = new Float32Array(count * 3);
         for(let i=0; i < count*3; i++) {
             posArray[i] = (Math.random() - 0.5) * 15;
