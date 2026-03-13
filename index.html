@@ -114,8 +114,8 @@
         ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
 
         #toast-zone {
-            position: fixed; top: env(safe-area-inset-top, 24px); left: 50%; transform: translateX(-50%);
-            z-index: 100; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;
+            position: fixed; top: calc(env(safe-area-inset-top, 0px) + 24px); left: 50%; transform: translateX(-50%);
+            z-index: 100; display: flex; flex-direction: column; gap: 8px; width: 95%; max-width: 350px;
         }
 
         .high-priority-task {
@@ -144,6 +144,24 @@
             }
             .glass-panel {
                 padding: 1rem;
+            }
+            #moduleSlots {
+                top: 1rem;
+                right: 1rem;
+                gap: 0.5rem;
+            }
+            #moduleSlots > div {
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+            #moduleSlots > div > i {
+                font-size: 0.75rem;
+            }
+            #moduleSlots > div > span {
+                font-size: 6px;
+                padding: 0.125rem;
+                top: -0.25rem;
+                right: -0.25rem;
             }
         }
     </style>
@@ -212,10 +230,7 @@
                     <i class="ph-fill ph-robot text-[var(--theme-primary)] text-2xl"></i>
                 </div>
                 <div class="flex flex-col justify-center min-h-[48px]">
-                    <div class="flex items-center gap-2">
-                        <p class="text-xs font-bold text-[var(--theme-primary)]">Assistant</p>
-                        <p id="aiStatus" class="text-[10px] text-[var(--theme-secondary)] font-mono border border-[var(--theme-secondary)] px-1.5 py-0.5 rounded-md">[STATUS: READY]</p>
-                    </div>
+                    <p class="text-xs font-bold text-[var(--theme-primary)]">Assistant</p>
                     <p id="aiMessage" class="text-sm text-gray-200 ai-text-cursor leading-tight mt-1">Hello! Getting things ready...</p>
                 </div>
             </div>
@@ -470,28 +485,11 @@
                     document.getElementById('timerIcon').className = "ph-fill ph-pause";
                 }
             }
-            setInterval(updateAiStatus, 60000);
-            updateAiStatus();
             renderModuleSlots();
             setInterval(renderModuleSlots, 60000);
         }
 
         // --- 3. DIALOGUE SYSTEM ---
-        function updateAiStatus() {
-            const el = document.getElementById('aiStatus');
-            const h = new Date().getHours();
-            if (h >= 23 || h < 5) {
-                el.innerText = "[STATUS: SLEEPING]";
-                el.className = "text-[10px] text-gray-400 font-mono border border-gray-500 px-1.5 py-0.5 rounded-md";
-            } else if (state.isTimerActive) {
-                el.innerText = "[STATUS: FOCUSING]";
-                el.className = "text-[10px] text-[var(--accent-red)] font-mono border border-[var(--accent-red)] px-1.5 py-0.5 rounded-md";
-            } else {
-                el.innerText = "[STATUS: READY]";
-                el.className = "text-[10px] text-[var(--theme-secondary)] font-mono border border-[var(--theme-secondary)] px-1.5 py-0.5 rounded-md";
-            }
-        }
-
         function aiSpeak(context) {
             if (isTyping) return;
             let pool = AI_BRAIN[context] || AI_BRAIN.idle;
@@ -992,7 +990,6 @@
                 icon.className = "ph-fill ph-play";
                 showToast("Timer Paused.", "ph-pause");
             }
-            updateAiStatus();
             saveState();
         }
 
@@ -1006,7 +1003,6 @@
                     document.getElementById('timerBtn').classList.remove('active');
                     document.getElementById('timerIcon').className = "ph-fill ph-play";
                     showToast("Timer Finished.", "ph-check-circle");
-                    updateAiStatus();
                     if("Notification" in window && Notification.permission === "granted") {
                         new Notification("Questify Assistant", { body: "Focus Session Over. Great job!" });
                     }
