@@ -3,45 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Questify // Nexus Cyberpunk</title>
+    <title>Questify</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         :root {
-            /* Cyberpunk Palette */
-            --bg-base: #050507;
+            /* Clean Dark Theme Palette */
+            --bg-base: #0a0a0c;
             --bg-surface: rgba(20, 20, 25, 0.85);
-            --neon-blue: #00f3ff;
-            --neon-purple: #bc13fe;
-            --neon-yellow: #fcee0a;
-            --neon-red: #ff003c;
+            --theme-primary: #00f3ff;
+            --theme-secondary: #bc13fe;
             --text-main: #ffffff;
             --text-muted: #888888;
-            --theme-primary: var(--neon-blue);
-            --theme-secondary: var(--neon-purple);
+            --accent-yellow: #fcee0a;
+            --accent-red: #ff3366;
         }
 
-        /* Themes */
+        /* Alternate Themes */
         body.theme-matrix {
             --theme-primary: #00ff41;
             --theme-secondary: #008f11;
-            --neon-blue: #00ff41;
-            --neon-purple: #008f11;
         }
         body.theme-crimson {
             --theme-primary: #ff003c;
             --theme-secondary: #8b0000;
-            --neon-blue: #ff003c;
-            --neon-purple: #8b0000;
         }
 
         body {
-            font-family: 'Rajdhani', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-base);
             color: var(--text-main);
             -webkit-tap-highlight-color: transparent;
@@ -56,146 +50,105 @@
 
         .glass-panel {
             background: var(--bg-surface);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-left: 3px solid var(--theme-primary);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-            border-radius: 4px; /* Sharper edges for cyberpunk */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         /* Animated Interactive Buttons */
         .btn-interact {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: slow-float 4s ease-in-out infinite;
-            min-height: 44px; /* Touch-friendly */
-            min-width: 44px;
+            transition: all 0.2s ease;
+            min-height: 48px; /* Touch-friendly size */
+            min-width: 48px;
         }
         .btn-interact:hover {
-            transform: scale(1.05) translateY(-2px);
-            box-shadow: 0 0 15px var(--theme-primary);
-            animation: none;
-            border-color: var(--theme-primary);
+            transform: translateY(-2px);
         }
         .btn-interact:active {
             transform: scale(0.95);
         }
 
-        @keyframes slow-float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
-        }
-
         .xp-bar-bg {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 2px; overflow: hidden; height: 8px;
+            background: #1a1a24;
+            border-radius: 8px; 
+            overflow: hidden; 
+            height: 10px;
         }
         .xp-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--theme-secondary), var(--theme-primary));
-            box-shadow: 0 0 10px var(--theme-primary);
             transition: width 0.8s ease-out;
+            border-radius: 8px;
         }
 
         /* Timer FAB */
         .timer-fab {
             background: #111;
             border: 2px solid var(--theme-primary);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
-            border-radius: 8px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
         .timer-fab.active {
-            border-color: var(--neon-red);
-            box-shadow: 0 0 25px rgba(255, 0, 60, 0.6);
-            animation: pulse-ring 1s infinite;
+            border-color: var(--accent-red);
+            animation: pulse-ring 1.5s infinite;
         }
 
         @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(255, 0, 60, 0.5); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 0, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 0, 60, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 51, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); }
         }
 
         .ai-text-cursor::after {
-            content: '_';
+            content: '|';
             animation: blink 1s step-end infinite;
+            margin-left: 2px;
+            color: var(--theme-primary);
         }
         @keyframes blink { 50% { opacity: 0; } }
 
         ::-webkit-scrollbar { width: 4px; background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--theme-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
 
         #toast-zone {
-            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: env(safe-area-inset-top, 24px); left: 50%; transform: translateX(-50%);
             z-index: 100; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;
         }
 
-        /* Glitch Effects */
-        .glitch-anim {
-            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-        }
-        @keyframes glitch-skew {
-            0% { transform: translate(0) }
-            20% { transform: translate(-4px, 4px) }
-            40% { transform: translate(-4px, -4px) }
-            60% { transform: translate(4px, 4px) }
-            80% { transform: translate(4px, -4px) }
-            100% { transform: translate(0) }
-        }
-
         .high-priority-task {
-            border-left: 4px solid var(--neon-red);
-            box-shadow: inset 0 0 20px rgba(255,0,60,0.1), 0 0 10px rgba(255,0,60,0.3);
+            border-left: 4px solid var(--accent-red);
+            background: linear-gradient(90deg, rgba(255,51,102,0.05) 0%, transparent 100%);
         }
 
-        /* Cyberpunk Input */
-        .cyber-input {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid var(--theme-secondary);
-            color: var(--neon-blue);
-            font-family: 'JetBrains Mono', monospace;
+        /* Clean Input */
+        .clean-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 16px; /* Prevents iOS auto-zoom */
         }
-        .cyber-input:focus {
-            box-shadow: 0 0 10px var(--theme-primary);
+        .clean-input:focus {
+            border-color: var(--theme-primary);
             outline: none;
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        /* Mobile Optimizations */
+        /* Mobile Adjustments */
         @media (max-width: 640px) {
+            #mainUI, #mainFooter {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
             .glass-panel {
-                padding: 0.75rem;
-                margin: 0 0.5rem;
-            }
-            .btn-interact {
-                min-height: 48px;
-                min-width: 48px;
-            }
-            #mainUI {
-                padding: 0 1rem;
-            }
-            #mainFooter {
-                padding: 0 1rem;
-            }
-            .timer-fab {
-                width: 20px;
-                height: 20px;
-            }
-            .xp-bar-bg {
-                height: 6px;
-            }
-            .ai-text-cursor {
-                font-size: 0.875rem;
-            }
-            #toast-zone {
-                width: 95%;
-                max-width: none;
+                padding: 1rem;
             }
         }
-
     </style>
 </head>
-<body class="flex flex-col items-center min-h-screen pb-32">
+<body class="flex flex-col items-center min-h-screen pb-[env(safe-area-inset-bottom,6rem)]">
 
     <!-- 3D Background -->
     <canvas id="bg-canvas"></canvas>
@@ -204,128 +157,123 @@
     <div id="toast-zone"></div>
 
     <!-- Init Name Prompt Overlay -->
-    <div id="namePromptModal" class="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center hidden">
-        <div class="glass-panel p-8 max-w-sm w-full text-center border-l-4 border-neon-blue">
-            <h2 class="text-2xl font-bold text-white mb-2 tracking-widest uppercase">System Init</h2>
-            <p class="text-sm text-gray-400 mb-6 font-mono">Enter Operator Designation</p>
-            <input type="text" id="operatorNameInput" placeholder="> DESIGNATION..." class="w-full cyber-input px-4 py-3 mb-6 rounded text-center text-lg uppercase tracking-widest">
-            <button onclick="saveName()" class="w-full bg-neon-blue text-black font-bold py-3 uppercase tracking-widest hover:bg-white transition-colors">Initialize</button>
+    <div id="namePromptModal" class="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center hidden px-4">
+        <div class="glass-panel p-6 sm:p-8 max-w-sm w-full text-center">
+            <h2 class="text-2xl font-bold text-white mb-2">Welcome</h2>
+            <p class="text-sm text-gray-400 mb-6">What is your name?</p>
+            <input type="text" id="operatorNameInput" placeholder="Your Name..." class="w-full clean-input px-4 py-3 mb-6 rounded-lg text-center font-medium">
+            <button onclick="saveName()" class="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-gray-200 transition-colors">Get Started</button>
         </div>
     </div>
 
     <!-- Shop Modal Overlay -->
     <div id="shopModal" class="fixed inset-0 bg-black/80 z-[150] flex flex-col items-center justify-center hidden backdrop-blur-sm p-4">
-        <div class="glass-panel w-full max-w-md p-6 max-h-[80vh] overflow-y-auto border-l-4 border-neon-yellow">
+        <div class="glass-panel w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-neon-yellow tracking-widest uppercase flex items-center gap-2">
-                    <i class="ph-bold ph-shopping-cart"></i> Black Market
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="ph-bold ph-shopping-cart text-[#fcee0a]"></i> Shop
                 </h2>
-                <button onclick="closeShop()" class="text-gray-400 hover:text-white"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="closeShop()" class="text-gray-400 hover:text-white p-2"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
-            <div id="shopItemsContainer" class="flex flex-col gap-4">
+            <div id="shopItemsContainer" class="flex flex-col gap-3">
                 <!-- Injected via JS -->
             </div>
         </div>
     </div>
 
-    <!-- Inventory (Stash) Modal Overlay -->
+    <!-- Inventory Modal Overlay -->
     <div id="inventoryModal" class="fixed inset-0 bg-black/80 z-[150] flex flex-col items-center justify-center hidden backdrop-blur-sm p-4">
-        <div class="glass-panel w-full max-w-md p-6 max-h-[80vh] overflow-y-auto border-l-4 border-neon-purple">
+        <div class="glass-panel w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-neon-purple tracking-widest uppercase flex items-center gap-2">
-                    <i class="ph-bold ph-backpack"></i> System Stash
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="ph-bold ph-backpack text-[#bc13fe]"></i> Inventory
                 </h2>
-                <button onclick="closeInventory()" class="text-gray-400 hover:text-white"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="closeInventory()" class="text-gray-400 hover:text-white p-2"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
-            <div id="inventoryItemsContainer" class="flex flex-col gap-4">
+            <div id="inventoryItemsContainer" class="flex flex-col gap-3">
                 <!-- Injected via JS -->
             </div>
         </div>
     </div>
 
-    <div id="mainUI" class="w-full max-w-md px-4 mt-6 flex flex-col gap-5 hidden">
+    <div id="mainUI" class="w-full max-w-md px-4 mt-6 flex flex-col gap-5 hidden pb-24">
         
         <!-- Header / Stats -->
-        <header class="glass-panel p-5 flex flex-col gap-4 relative">
+        <header class="glass-panel p-5 flex flex-col gap-5 relative">
             
             <!-- Module Slots (Top Right) -->
             <div class="absolute top-4 right-4 flex gap-2" id="moduleSlots">
                 <!-- Slots generated via JS -->
             </div>
 
-            <!-- AI Communicator -->
+            <!-- Assistant Communicator -->
             <div class="flex items-start gap-3 border-b border-white/10 pb-4 pr-24">
-                <div class="w-12 h-12 rounded border border-neon-blue bg-black flex items-center justify-center shrink-0 shadow-[0_0_10px_var(--neon-blue)]">
-                    <i class="ph-fill ph-cpu text-neon-blue text-2xl"></i>
+                <div class="w-12 h-12 rounded-full border border-[var(--theme-primary)] bg-black/50 flex items-center justify-center shrink-0">
+                    <i class="ph-fill ph-robot text-[var(--theme-primary)] text-2xl"></i>
                 </div>
                 <div class="flex flex-col justify-center min-h-[48px]">
                     <div class="flex items-center gap-2">
-                        <p class="text-[10px] font-bold text-neon-blue tracking-wider uppercase font-mono">Nexus AI</p>
-                        <p id="aiStatus" class="text-[9px] text-neon-purple font-mono border border-neon-purple px-1 rounded-sm">[STATUS: ANALYZING]</p>
+                        <p class="text-xs font-bold text-[var(--theme-primary)]">Assistant</p>
+                        <p id="aiStatus" class="text-[10px] text-[var(--theme-secondary)] font-mono border border-[var(--theme-secondary)] px-1.5 py-0.5 rounded-md">[STATUS: READY]</p>
                     </div>
-                    <p id="aiMessage" class="text-sm font-medium text-slate-200 ai-text-cursor leading-tight mt-1">Initializing...</p>
+                    <p id="aiMessage" class="text-sm text-gray-200 ai-text-cursor leading-tight mt-1">Hello! Getting things ready...</p>
                 </div>
             </div>
 
             <!-- Metrics Grid -->
-            <div class="grid grid-cols-4 gap-2 text-center">
-                <div class="flex flex-col items-center justify-center bg-black/50 p-2 rounded border border-gray-800">
-                    <i class="ph-fill ph-currency-btc text-neon-yellow text-xl mb-1 drop-shadow-[0_0_5px_rgba(252,238,10,0.8)]"></i>
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="flex flex-col items-center justify-center bg-black/40 p-3 rounded-lg border border-gray-800">
+                    <i class="ph-fill ph-coins text-yellow-400 text-xl mb-1"></i>
                     <span id="stat-coins" class="text-lg font-bold font-mono">0</span>
-                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Credits</span>
+                    <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Coins</span>
                 </div>
-                <div class="flex flex-col items-center justify-center bg-black/50 p-2 rounded border border-gray-800">
-                    <i class="ph-fill ph-fire text-neon-red text-xl mb-1 drop-shadow-[0_0_5px_rgba(255,0,60,0.8)]"></i>
+                <div class="flex flex-col items-center justify-center bg-black/40 p-3 rounded-lg border border-gray-800">
+                    <i class="ph-fill ph-fire text-orange-500 text-xl mb-1"></i>
                     <span id="stat-streak" class="text-lg font-bold font-mono">0</span>
-                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Streak</span>
+                    <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Days</span>
                 </div>
-                <div class="flex flex-col items-center justify-center bg-black/50 p-2 rounded border border-gray-800">
-                    <i class="ph-fill ph-key text-white text-xl mb-1 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]"></i>
+                <div class="flex flex-col items-center justify-center bg-black/40 p-3 rounded-lg border border-gray-800">
+                    <i class="ph-fill ph-lightning text-white text-xl mb-1"></i>
                     <span id="stat-tickets" class="text-lg font-bold font-mono">0</span>
-                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Passes</span>
-                </div>
-                <div class="flex flex-col items-center justify-center bg-black/50 p-2 rounded border border-gray-800">
-                    <i class="ph-fill ph-arrows-clockwise text-neon-blue text-xl mb-1 drop-shadow-[0_0_5px_rgba(0,243,255,0.8)]"></i>
-                    <span id="stat-reboots" class="text-lg font-bold font-mono">0</span>
-                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Reboots</span>
+                    <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Boosts</span>
                 </div>
             </div>
 
-            <!-- Optimization Progression -->
-            <div class="w-full mt-1">
-                <div class="flex justify-between text-[10px] font-bold text-gray-400 mb-1.5 px-1 uppercase tracking-wider">
-                    <span>System Optimization</span>
-                    <span id="xp-text" class="font-mono text-neon-blue">0%</span>
+            <!-- Progress Bar -->
+            <div class="w-full">
+                <div class="flex justify-between text-xs font-semibold text-gray-400 mb-2 px-1">
+                    <span>Daily Progress</span>
+                    <span id="xp-text" class="font-mono text-[var(--theme-primary)] font-bold">0%</span>
                 </div>
                 <div class="xp-bar-bg">
                     <div id="xp-bar" class="xp-bar-fill" style="width: 0%;"></div>
                 </div>
             </div>
 
-            <!-- Efficiency Analytics Card -->
-            <div class="w-full bg-black/60 border border-gray-800 rounded p-2 flex justify-between items-center px-4 mt-2">
+            <!-- Analytics Card -->
+            <div class="w-full bg-black/40 border border-gray-800 rounded-lg p-3 flex justify-between items-center">
                 <div class="flex items-center gap-2">
-                    <i class="ph-duotone ph-chart-line-up text-neon-purple text-lg"></i>
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Peak Efficiency:</span>
+                    <i class="ph-duotone ph-chart-line-up text-[var(--theme-secondary)] text-lg"></i>
+                    <span class="text-xs font-semibold text-gray-400">Most Active Time:</span>
                 </div>
-                <span id="stat-peak" class="text-sm font-mono font-bold text-white">ANALYZING...</span>
+                <span id="stat-peak" class="text-xs font-bold text-white">Need Data</span>
             </div>
 
         </header>
 
         <!-- Input Area -->
-        <div class="relative flex items-center gap-2">
-            <button id="priorityToggleBtn" onclick="togglePriority()" class="w-12 h-12 bg-black border border-gray-700 hover:border-neon-red text-gray-500 rounded flex items-center justify-center shadow-md transition-colors btn-interact shrink-0">
+        <div class="flex items-center gap-2">
+            <button id="priorityToggleBtn" onclick="togglePriority()" class="w-12 h-12 bg-black/50 border border-gray-700 hover:border-red-500 text-gray-500 rounded-lg flex items-center justify-center transition-colors btn-interact shrink-0">
                 <i id="priorityIcon" class="ph-bold ph-warning text-xl"></i>
             </button>
             <div class="relative flex-1">
                 <input type="text" id="taskInput" 
                        onkeydown="if(event.key==='Enter') addUserTask()"
                        oninput="checkCommands(this)"
-                       placeholder="Define objective... (or type 'reset')" 
-                       class="w-full cyber-input pl-4 pr-12 py-3 rounded text-white placeholder-gray-500 font-medium text-sm transition-all shadow-lg uppercase">
-                <button onclick="addUserTask()" class="absolute right-1 top-1 w-10 h-10 bg-black/50 hover:bg-theme-primary text-theme-primary hover:text-black border border-theme-primary rounded flex items-center justify-center transition-all z-10 btn-interact">
-                    <i class="ph-bold ph-plus text-xl"></i>
+                       placeholder="Add a new task..." 
+                       class="w-full clean-input pl-4 pr-12 py-3 rounded-lg transition-all">
+                <button onclick="addUserTask()" class="absolute right-1 top-1 bottom-1 w-10 bg-black/20 hover:bg-[var(--theme-primary)] text-[var(--theme-primary)] hover:text-black rounded-md flex items-center justify-center transition-colors btn-interact z-10">
+                    <i class="ph-bold ph-plus text-lg"></i>
                 </button>
             </div>
         </div>
@@ -338,116 +286,109 @@
     </div>
 
     <!-- Bottom Navigation Bar -->
-    <footer id="mainFooter" class="fixed bottom-0 w-full max-w-md bg-[#050507]/95 backdrop-blur-xl border-t border-gray-800 px-6 pb-6 pt-3 flex justify-between items-center z-50 hidden relative">
+    <footer id="mainFooter" class="fixed bottom-0 w-full max-w-md bg-[#0a0a0c]/95 backdrop-blur-lg border-t border-gray-800 px-6 py-4 flex justify-between items-center z-50 hidden">
         
-        <div class="flex gap-4 z-10">
+        <div class="flex gap-6 z-10">
             <!-- Shop Action -->
-            <button onclick="openShop()" class="flex flex-col items-center gap-1 btn-interact opacity-80 hover:opacity-100 text-gray-400 w-12 group">
-                <div class="w-10 h-10 bg-black rounded border border-gray-800 group-hover:border-neon-yellow flex items-center justify-center text-neon-yellow transition-colors">
-                    <i class="ph-fill ph-shopping-cart text-xl"></i>
-                </div>
-                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Market</span>
+            <button onclick="openShop()" class="flex flex-col items-center gap-1 btn-interact text-gray-400 hover:text-[#fcee0a] transition-colors group">
+                <i class="ph-fill ph-shopping-cart text-2xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-semibold">Shop</span>
             </button>
 
             <!-- Inventory Action -->
-            <button onclick="openInventory()" class="flex flex-col items-center gap-1 btn-interact opacity-80 hover:opacity-100 text-gray-400 w-12 group relative">
-                <div class="w-10 h-10 bg-black rounded border border-gray-800 group-hover:border-neon-purple flex items-center justify-center text-neon-purple transition-colors">
-                    <i class="ph-fill ph-backpack text-xl"></i>
-                </div>
-                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Stash</span>
+            <button onclick="openInventory()" class="flex flex-col items-center gap-1 btn-interact text-gray-400 hover:text-[#bc13fe] transition-colors group relative">
+                <i class="ph-fill ph-backpack text-2xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-semibold">Stash</span>
             </button>
         </div>
 
         <!-- Big Center Timer Button -->
-        <div class="absolute left-1/2 transform -translate-x-1/2 -top-8 flex flex-col items-center z-20">
-            <button id="timerBtn" onclick="toggleTimer()" class="w-16 h-16 timer-fab flex items-center justify-center text-white text-2xl btn-interact z-10">
-                <i id="timerIcon" class="ph-fill ph-power"></i>
+        <div class="absolute left-1/2 transform -translate-x-1/2 -top-6 flex flex-col items-center z-20">
+            <button id="timerBtn" onclick="toggleTimer()" class="w-16 h-16 timer-fab flex items-center justify-center text-white text-3xl btn-interact bg-black">
+                <i id="timerIcon" class="ph-fill ph-play"></i>
             </button>
-            <div class="bg-black border border-gray-800 px-3 py-1 rounded mt-2 shadow-[0_0_10px_rgba(0,0,0,0.8)]">
-                <span id="timerDisplay" class="text-xs font-mono font-bold text-neon-blue tracking-widest">00:00:00</span>
+            <div class="bg-black/90 border border-gray-800 px-3 py-1 rounded-full mt-2 shadow-lg backdrop-blur-md">
+                <span id="timerDisplay" class="text-xs font-mono font-bold text-[var(--theme-primary)]">00:00:00</span>
             </div>
         </div>
 
-        <div class="flex gap-4 z-10">
+        <div class="flex gap-6 z-10">
             <!-- Boost Action -->
-            <button onclick="useTicket()" class="flex flex-col items-center gap-1 btn-interact opacity-80 hover:opacity-100 text-gray-400 w-12 group">
-                <div class="w-10 h-10 bg-black rounded border border-gray-800 group-hover:border-white flex items-center justify-center text-white transition-colors">
-                    <i class="ph-fill ph-lightning text-xl"></i>
-                </div>
-                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Boost</span>
+            <button onclick="useTicket()" class="flex flex-col items-center gap-1 btn-interact text-gray-400 hover:text-white transition-colors group">
+                <i class="ph-fill ph-lightning text-2xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-semibold">Boost</span>
             </button>
         </div>
     </footer>
 
     <script>
-        // --- 1. SMART AI DIALOGUE SYSTEM ---
+        // --- 1. SMART ASSISTANT DIALOGUE SYSTEM ---
         const AI_BRAIN = {
             morning:[
-                "Operator online. Systems primed for early execution.",
-                "Morning cycle detected. Hydration protocols recommended.",
-                "Awaiting daily directives. Let's optimize."
+                "Good morning! Ready to tackle the day?",
+                "A fresh start! Remember to drink some water.",
+                "What's on the agenda for today?"
             ],
             afternoon:[
-                "Mid-cycle update. Efficiency remains stable.",
-                "Maintain focus vectors. Distractions are liabilities.",
-                "System temperatures optimal. Continue execution."
+                "Good afternoon! Keep up the great work.",
+                "Stay focused, you're doing well.",
+                "Hope your day is going smoothly!"
             ],
             evening:[
-                "Twilight cycle. Wrap up primary objectives.",
-                "Outstanding metrics today. Prepare for cooldown.",
-                "Data structures compiling. Excellent work."
+                "Good evening! Time to start wrapping things up.",
+                "Great work today. You earned some rest.",
+                "Take it easy tonight."
             ],
             night:[
-                "Warning: Late hour detected. Sleep overrides suggested.",
-                "Cognitive overclocking not recommended at this hour.",
-                "System entering low-power mode soon."
+                "It's getting quite late. Make sure to get some sleep!",
+                "Don't push yourself too hard tonight.",
+                "Time to rest and recharge for tomorrow."
             ],
             complete:[
-                "Objective neutralized. Credits transferred.",
-                "Task deleted from matrix. Efficiency logged.",
-                "System parameters improved."
+                "Task completed! Coins earned.",
+                "Great job! Keep it up.",
+                "Done and dusted!"
             ],
             idle:[
-                "Awaiting next input.",
-                "System standby. Define objective.",
-                "Matrix stable. Ready for commands."
+                "Ready for your next task.",
+                "What should we do next?",
+                "Waiting for your input."
             ],
             levelUp:[
-                "SYSTEM REBOOT COMPLETE. Limits surpassed.",
-                "Optimization 100%. Major credit payload delivered."
+                "Level up! Fantastic work.",
+                "Progress filled! Enjoy the bonus coins."
             ]
         };
 
         const SYSTEM_QUESTS =[
-            { text: "Drink 500ml H2O", type: 'Biometrics' },
-            { text: "Organize physical sector", type: 'Maintenance' },
-            { text: "15 mins physical calibration", type: 'Biometrics' },
-            { text: "Consume 10 pages of data", type: 'Cognitive' },
-            { text: "Clear workspace debris", type: 'Maintenance' },
-            { text: "5 mins deep oxygen intake", type: 'Cognitive' },
-            { text: "Execute hygiene protocols", type: 'Maintenance' },
-            { text: "Review daily directives", type: 'Cognitive' },
-            { text: "Stretch chassis / back", type: 'Biometrics' },
-            { text: "Disconnect from network for 1 hour", type: 'Focus' }
+            { text: "Drink a glass of water", type: 'Health' },
+            { text: "Tidy up your workspace", type: 'Home' },
+            { text: "15 minutes of stretching", type: 'Health' },
+            { text: "Read 10 pages of a book", type: 'Learning' },
+            { text: "Clear your desk", type: 'Home' },
+            { text: "Take 5 deep breaths", type: 'Wellness' },
+            { text: "Freshen up / Wash face", type: 'Health' },
+            { text: "Plan tasks for tomorrow", type: 'Planning' },
+            { text: "Go for a short walk", type: 'Health' },
+            { text: "Disconnect from screens for 1 hour", type: 'Wellness' }
         ];
 
         const SHOP_ITEMS =[
-            { id: 'xp_overclocker', name: 'XP Overclocker', desc: 'Increases System Optimization gain by 2x (1 Hr)', cost: 2000, duration: 1, type: 'buff', icon: 'ph-trend-up', color: 'text-neon-blue' },
-            { id: 'credit_siphon', name: 'Credit Siphon', desc: 'Increases Credit rewards by 2x (1 Hr)', cost: 2500, duration: 1, type: 'buff', icon: 'ph-currency-btc', color: 'text-neon-yellow' },
-            { id: 'auto_repair', name: 'Auto-Repair Bot', desc: 'Instantly clears 1 System task', cost: 1000, duration: 0, type: 'instant', icon: 'ph-robot', color: 'text-gray-300' },
-            { id: 'stability_patch', name: 'Stability Patch', desc: 'Protects Daily Streak for 24 hours', cost: 1500, duration: 24, type: 'buff', icon: 'ph-shield-check', color: 'text-neon-purple' },
-            { id: 'theme_matrix', name: 'Matrix UI Theme', desc: 'Unlocks Green/Matrix Colorway', cost: 5000, duration: 0, type: 'permanent', theme: 'theme-matrix', icon: 'ph-paint-brush', color: 'text-green-500' },
-            { id: 'theme_crimson', name: 'Crimson UI Theme', desc: 'Unlocks Red Alert Colorway', cost: 5000, duration: 0, type: 'permanent', theme: 'theme-crimson', icon: 'ph-paint-brush', color: 'text-red-500' },
-            { id: 'game_battery', name: 'Game Battery', desc: 'Instantly adds 1 hour to Timer', cost: 3000, duration: 0, type: 'instant', icon: 'ph-game-controller', color: 'text-neon-blue' }
+            { id: 'xp_overclocker', name: 'XP Booster', desc: 'Doubles Progress gain for 1 Hour', cost: 1000, duration: 1, type: 'buff', icon: 'ph-trend-up', color: 'text-blue-400' },
+            { id: 'credit_siphon', name: 'Coin Multiplier', desc: 'Doubles Coin rewards for 1 Hour', cost: 1000, duration: 1, type: 'buff', icon: 'ph-coins', color: 'text-yellow-400' },
+            { id: 'auto_repair', name: 'Task Skipper', desc: 'Instantly clears 1 Daily task', cost: 500, duration: 0, type: 'instant', icon: 'ph-magic-wand', color: 'text-purple-400' },
+            { id: 'stability_patch', name: 'Streak Protector', desc: 'Protects Daily Streak for 24 hours', cost: 200, duration: 24, type: 'buff', icon: 'ph-shield-check', color: 'text-green-400' },
+            { id: 'theme_matrix', name: 'Green Theme', desc: 'Unlocks Green UI Colorway', cost: 1500, duration: 0, type: 'permanent', theme: 'theme-matrix', icon: 'ph-paint-brush', color: 'text-green-500' },
+            { id: 'theme_crimson', name: 'Red Theme', desc: 'Unlocks Red UI Colorway', cost: 1500, duration: 0, type: 'permanent', theme: 'theme-crimson', icon: 'ph-paint-brush', color: 'text-red-500' },
+            { id: 'game_battery', name: 'Timer Extension', desc: 'Instantly adds 1 hour to Focus Timer', cost: 1000, duration: 0, type: 'instant', icon: 'ph-hourglass-high', color: 'text-blue-400' }
         ];
 
         let state = {
             userName: null,
             coins: 0,
             streak: 1,
-            reboots: 0, 
             optimization: 0, // out of 5
-            tickets: 0, // Kept as Passes/Boosts
+            tickets: 0, // Boosts
             tasks:[],
             userRecurringTasks:[],
             isTimerActive: false,
@@ -470,13 +411,17 @@
             coin: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
             error: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3')
         };
-        Object.values(SOUNDS).forEach(s => s.volume = 0.4);
+        Object.values(SOUNDS).forEach(s => s.volume = 0.3);
 
         // --- 2. INITIALIZATION ---
         function loadState() {
             const data = localStorage.getItem('questify_nexus_data');
             if (data) {
-                state = { ...state, ...JSON.parse(data) };
+                const parsed = JSON.parse(data);
+                // Migrate from older version if needed (remove reboots)
+                if(parsed.reboots !== undefined) delete parsed.reboots;
+                
+                state = { ...state, ...parsed };
                 if(!state.unlockedThemes) state.unlockedThemes = ['default'];
                 if(!state.activeModules) state.activeModules =[];
                 if(!state.inventory) state.inventory = {};
@@ -511,11 +456,6 @@
                 Notification.requestPermission();
             }
             
-            // Register service worker for offline support
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered')).catch(err => console.log('SW failed', err));
-            }
-            
             checkDailyReset();
             updateUI();
             renderTasks();
@@ -533,21 +473,22 @@
             setInterval(updateAiStatus, 60000);
             updateAiStatus();
             renderModuleSlots();
+            setInterval(renderModuleSlots, 60000);
         }
 
-        // --- 3. AI & SYSTEM DIALOGUE ---
+        // --- 3. DIALOGUE SYSTEM ---
         function updateAiStatus() {
             const el = document.getElementById('aiStatus');
             const h = new Date().getHours();
             if (h >= 23 || h < 5) {
-                el.innerText = "[STATUS: SLEEP_MODE]";
-                el.className = "text-[9px] text-gray-500 font-mono border border-gray-500 px-1 rounded-sm";
+                el.innerText = "[STATUS: SLEEPING]";
+                el.className = "text-[10px] text-gray-400 font-mono border border-gray-500 px-1.5 py-0.5 rounded-md";
             } else if (state.isTimerActive) {
-                el.innerText = "[STATUS: OVERCLOCKED]";
-                el.className = "text-[9px] text-neon-red font-mono border border-neon-red px-1 rounded-sm";
+                el.innerText = "[STATUS: FOCUSING]";
+                el.className = "text-[10px] text-[var(--accent-red)] font-mono border border-[var(--accent-red)] px-1.5 py-0.5 rounded-md";
             } else {
-                el.innerText = "[STATUS: ANALYZING]";
-                el.className = "text-[9px] text-neon-purple font-mono border border-neon-purple px-1 rounded-sm";
+                el.innerText = "[STATUS: READY]";
+                el.className = "text-[10px] text-[var(--theme-secondary)] font-mono border border-[var(--theme-secondary)] px-1.5 py-0.5 rounded-md";
             }
         }
 
@@ -564,7 +505,7 @@
             }
 
             let msg = pool[Math.floor(Math.random() * pool.length)];
-            if(context === 'login') msg = `Operator ${state.userName} verified. ` + msg;
+            if(context === 'login') msg = `Welcome back, ${state.userName}! ` + msg;
 
             const el = document.getElementById('aiMessage');
             el.innerHTML = '';
@@ -578,12 +519,11 @@
                     clearInterval(typing);
                     isTyping = false;
                 }
-            }, 30);
+            }, 25);
         }
 
         // --- 4. CORE MECHANICS ---
         function isModuleActive(id) {
-            // Clean up expired modules silently
             const now = Date.now();
             state.activeModules = state.activeModules.filter(m => m.expiresAt > now);
             return state.activeModules.some(m => m.id === id);
@@ -598,7 +538,7 @@
                     state.streak++;
                 } else if (state.lastDate) {
                     if (isModuleActive('stability_patch')) {
-                        showToast("Streak protected by Stability Patch.", "ph-shield-check");
+                        showToast("Streak protected by Streak Protector.", "ph-shield-check");
                     } else {
                         state.streak = 1;
                     }
@@ -607,7 +547,7 @@
                 generateNewDayRoutines();
                 state.lastDate = today;
                 aiSpeak('login');
-                showToast("System directives reset for new cycle.", "ph-sun");
+                showToast("Tasks reset for the new day!", "ph-sun");
             } else {
                 aiSpeak('idle');
             }
@@ -617,14 +557,14 @@
         function generateNewDayRoutines() {
             state.tasks =[];
             const shuffled = [...SYSTEM_QUESTS].sort(() => 0.5 - Math.random());
-            const selectedSystem = shuffled.slice(0, 5);
+            const selectedSystem = shuffled.slice(0, 4); // Just 4 daily tasks
             
-            selectedSystem.forEach(q => createTaskObj(q.text, 'System', false, false));
+            selectedSystem.forEach(q => createTaskObj(q.text, 'Daily', false, false));
             state.userRecurringTasks.forEach(text => createTaskObj(text, 'Personal', true, false));
         }
 
         function createTaskObj(text, category, isUserAdded, isPriority) {
-            const baseReward = Math.floor(Math.random() * 300) + 200; // 200-500
+            const baseReward = Math.floor(Math.random() * 200) + 100; // 100-300
             state.tasks.push({
                 id: Date.now() + Math.random(),
                 text: text,
@@ -640,15 +580,13 @@
             const btn = document.getElementById('priorityToggleBtn');
             const icon = document.getElementById('priorityIcon');
             if(isHighPriorityActive) {
-                btn.classList.replace('text-gray-500', 'text-neon-red');
-                btn.classList.replace('border-gray-700', 'border-neon-red');
-                btn.classList.add('shadow-[0_0_15px_rgba(255,0,60,0.5)]');
-                icon.className = "ph-fill ph-warning";
+                btn.classList.replace('text-gray-500', 'text-red-500');
+                btn.classList.replace('border-gray-700', 'border-red-500');
+                btn.classList.add('bg-red-500/10');
             } else {
-                btn.classList.replace('text-neon-red', 'text-gray-500');
-                btn.classList.replace('border-neon-red', 'border-gray-700');
-                btn.classList.remove('shadow-[0_0_15px_rgba(255,0,60,0.5)]');
-                icon.className = "ph-bold ph-warning";
+                btn.classList.replace('text-red-500', 'text-gray-500');
+                btn.classList.replace('border-red-500', 'border-gray-700');
+                btn.classList.remove('bg-red-500/10');
             }
         }
 
@@ -670,10 +608,9 @@
             aiSpeak('idle');
         }
 
-        function removeTask(id, isGlitch = false) {
+        function removeTask(id) {
             const el = document.getElementById(`task-${id}`);
             if(el) {
-                if(isGlitch) el.classList.add('glitch-anim');
                 el.style.transform = "scale(0.95)";
                 el.style.opacity = "0";
             }
@@ -681,12 +618,12 @@
                 state.tasks = state.tasks.filter(t => t.id !== id);
                 renderTasks();
                 saveState();
-            }, 300);
+            }, 200);
         }
 
         function dropUserTaskForever(text, id) {
             state.userRecurringTasks = state.userRecurringTasks.filter(t => t !== text);
-            removeTask(id, true);
+            removeTask(id);
         }
 
         function completeTask(id, reward, isPriority) {
@@ -696,7 +633,7 @@
 
             const el = document.getElementById(`task-${id}`);
             if(el) {
-                el.style.transform = "scale(0.95)";
+                el.style.transform = "translateX(20px)";
                 el.style.opacity = "0";
             }
 
@@ -711,13 +648,12 @@
 
                 if(state.optimization >= 5) {
                     state.optimization -= 5;
-                    state.reboots++;
                     state.coins += 2000;
-                    state.tickets++; // Bonus pass on reboot
+                    state.tickets++; // Bonus boost on level up
                     aiSpeak('levelUp');
                     SOUNDS.complete.play();
-                    confetti({ particleCount: 200, spread: 100, colors:['#00f3ff', '#bc13fe', '#fcee0a'] });
-                    showToast("SYSTEM REBOOT: Optimization 100%. +2000 CR", "ph-arrows-clockwise");
+                    confetti({ particleCount: 150, spread: 80, origin: {y: 0.6} });
+                    showToast("Level Up! Progress filled. +2000 Coins", "ph-star");
                 } else {
                     aiSpeak('complete');
                     SOUNDS.coin.play();
@@ -727,7 +663,7 @@
                 renderTasks();
                 updateAnalytics();
                 saveState();
-            }, 250);
+            }, 200);
         }
 
         // --- 5. UI RENDERING ---
@@ -737,40 +673,40 @@
 
             if(state.tasks.length === 0) {
                 list.innerHTML = `
-                    <div class="glass-panel p-8 rounded-xl text-center border-dashed border border-gray-700">
-                        <i class="ph-duotone ph-check-square-offset text-4xl text-neon-blue mb-3 opacity-80"></i>
-                        <p class="font-bold text-gray-300 tracking-widest uppercase text-sm">Matrix Clear</p>
-                        <p class="text-[10px] text-gray-500 mt-1 font-mono">Standby for new objectives.</p>
+                    <div class="glass-panel p-8 text-center border border-dashed border-gray-700">
+                        <i class="ph-duotone ph-check-circle text-4xl text-[var(--theme-primary)] mb-3 opacity-80"></i>
+                        <p class="font-semibold text-gray-200 text-lg">All tasks complete!</p>
+                        <p class="text-xs text-gray-500 mt-1">Add some tasks above or enjoy your free time.</p>
                     </div>`;
                 return;
             }
 
             state.tasks.forEach(task => {
-                const icon = task.category === 'System' ? 'ph-cpu' : 'ph-user';
+                const icon = task.category === 'Daily' ? 'ph-sun' : 'ph-user';
                 let calcReward = task.baseReward;
                 if (isModuleActive('credit_siphon')) calcReward *= 2;
                 if (task.isPriority) calcReward = Math.floor(calcReward * 1.5);
 
-                const priorityClass = task.isPriority ? 'high-priority-task' : 'border-l-2 border-theme-primary';
+                const priorityClass = task.isPriority ? 'high-priority-task' : 'border-l-[3px] border-[var(--theme-primary)]';
 
                 const div = document.createElement('div');
                 div.id = `task-${task.id}`;
-                div.className = `glass-panel p-4 flex items-center gap-4 transition-all duration-300 relative overflow-hidden ${priorityClass}`;
+                div.className = `glass-panel p-3 sm:p-4 flex items-center gap-3 transition-all duration-300 relative overflow-hidden ${priorityClass}`;
                 
                 div.innerHTML = `
-                    <div class="w-10 h-10 bg-black border border-gray-800 rounded flex items-center justify-center shrink-0">
-                        <i class="ph-fill ${icon} text-xl ${task.isPriority ? 'text-neon-red' : 'text-neon-blue'}"></i>
+                    <div class="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="ph-fill ${icon} text-xl ${task.isPriority ? 'text-red-400' : 'text-gray-300'}"></i>
                     </div>
                     <div class="flex-1 min-w-0 pr-2">
                         <div class="flex items-center gap-2 mb-0.5">
-                            <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 font-mono">${task.category} ${task.isPriority ? '<span class="text-neon-red">• HIGH PRIORITY</span>' : ''}</span>
-                            ${task.isUserAdded ? `<button onclick="dropUserTaskForever('${task.text.replace(/'/g, "\\'")}', ${task.id})" class="text-[9px] text-red-500 hover:text-red-400 uppercase tracking-widest font-mono"><i class="ph-bold ph-trash"></i> Drop</button>` : ''}
+                            <span class="text-[10px] font-semibold uppercase text-gray-400">${task.category} ${task.isPriority ? '<span class="text-red-400">• High Priority</span>' : ''}</span>
+                            ${task.isUserAdded ? `<button onclick="dropUserTaskForever('${task.text.replace(/'/g, "\\'")}', ${task.id})" class="text-[10px] text-red-400 hover:text-red-300 uppercase"><i class="ph-bold ph-trash"></i> Drop</button>` : ''}
                         </div>
-                        <p class="font-semibold text-gray-100 text-sm truncate uppercase tracking-wider">${task.text}</p>
-                        <p class="text-[10px] font-mono text-neon-yellow font-bold mt-1">+${calcReward} CR</p>
+                        <p class="font-medium text-gray-100 text-sm sm:text-base leading-snug">${task.text}</p>
+                        <p class="text-[10px] font-mono text-yellow-400 font-semibold mt-1">+${calcReward} Coins</p>
                     </div>
-                    <button onclick="completeTask(${task.id}, ${task.baseReward}, ${task.isPriority})" class="w-12 h-12 bg-black border border-gray-700 hover:border-theme-primary hover:text-theme-primary text-gray-500 rounded flex items-center justify-center transition-all btn-interact shrink-0 group">
-                        <i class="ph-bold ph-check text-xl group-hover:drop-shadow-[0_0_8px_var(--theme-primary)]"></i>
+                    <button onclick="completeTask(${task.id}, ${task.baseReward}, ${task.isPriority})" class="w-12 h-12 bg-black/30 border border-gray-700 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] text-gray-400 rounded-lg flex items-center justify-center transition-colors btn-interact shrink-0">
+                        <i class="ph-bold ph-check text-2xl"></i>
                     </button>
                 `;
                 list.appendChild(div);
@@ -781,23 +717,23 @@
             const container = document.getElementById('moduleSlots');
             container.innerHTML = '';
             
-            // Allow up to 3 slots
             for(let i=0; i<3; i++) {
                 const mod = state.activeModules[i];
                 const div = document.createElement('div');
                 if (mod) {
                     const item = SHOP_ITEMS.find(x => x.id === mod.id);
-                    div.className = `w-8 h-8 bg-black border border-neon-blue rounded flex flex-col items-center justify-center relative group shadow-[0_0_8px_rgba(0,243,255,0.3)]`;
+                    const remaining = Math.max(0, mod.expiresAt - Date.now());
+                    const timeDisplay = remaining < 3600000 ? Math.ceil(remaining / 60000) + 'm' : Math.ceil(remaining / 3600000) + 'h';
+                    div.className = `w-8 h-8 bg-black/60 border border-[var(--theme-primary)] rounded-md flex items-center justify-center relative group shadow-[0_0_8px_rgba(0,243,255,0.2)]`;
                     div.innerHTML = `
-                        <i class="ph-fill ${item.icon} text-neon-blue text-sm"></i>
-                        <!-- Tooltip -->
-                        <div class="absolute -bottom-8 right-0 bg-black border border-gray-700 text-white text-[9px] font-mono px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-50">
-                            ${item.name} active
+                        <i class="ph-fill ${item.icon} text-[var(--theme-primary)] text-sm"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] px-1 rounded-full font-bold">${timeDisplay}</span>
+                        <div class="absolute -bottom-8 right-0 bg-black border border-gray-700 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-50">
+                            ${item.name}
                         </div>
                     `;
                 } else {
-                    div.className = `w-8 h-8 bg-black/50 border border-gray-800 border-dashed rounded flex items-center justify-center`;
-                    div.innerHTML = `<span class="text-[8px] text-gray-600 font-mono">SLOT</span>`;
+                    div.className = `w-8 h-8 bg-black/30 border border-gray-800 border-dashed rounded-md flex items-center justify-center`;
                 }
                 container.appendChild(div);
             }
@@ -807,7 +743,6 @@
             document.getElementById('stat-coins').innerText = state.coins.toLocaleString();
             document.getElementById('stat-streak').innerText = state.streak;
             document.getElementById('stat-tickets').innerText = state.tickets;
-            document.getElementById('stat-reboots').innerText = state.reboots;
 
             const pct = Math.min(100, (state.optimization / 5) * 100);
             document.getElementById('xp-text').innerText = `${pct}%`;
@@ -816,18 +751,17 @@
 
         function updateAnalytics() {
             if(state.taskHistory.length === 0) {
-                document.getElementById('stat-peak').innerText = 'NO DATA';
+                document.getElementById('stat-peak').innerText = 'Need Data';
                 return;
             }
-            // Calculate most active hour segment
             let hours = state.taskHistory.map(t => new Date(t).getHours());
             let hourCounts = hours.reduce((acc, h) => { acc[h] = (acc[h] || 0) + 1; return acc; }, {});
             let peakHour = parseInt(Object.keys(hourCounts).reduce((a, b) => hourCounts[a] > hourCounts[b] ? a : b));
             
-            let timeOfDay = 'NIGHT CYCLE';
-            if(peakHour >= 5 && peakHour < 12) timeOfDay = 'MORNING CYCLE';
-            else if(peakHour >= 12 && peakHour < 18) timeOfDay = 'MID-DAY CYCLE';
-            else if(peakHour >= 18 && peakHour < 22) timeOfDay = 'EVE CYCLE';
+            let timeOfDay = 'NIGHT';
+            if(peakHour >= 5 && peakHour < 12) timeOfDay = 'MORNING';
+            else if(peakHour >= 12 && peakHour < 18) timeOfDay = 'AFTERNOON';
+            else if(peakHour >= 18 && peakHour < 22) timeOfDay = 'EVENING';
 
             document.getElementById('stat-peak').innerText = timeOfDay;
         }
@@ -835,8 +769,8 @@
         function showToast(msg, icon = "ph-info") {
             const zone = document.getElementById('toast-zone');
             const el = document.createElement('div');
-            el.className = 'glass-panel bg-black/95 border border-neon-blue px-4 py-3 flex items-center gap-3 shadow-[0_0_20px_rgba(0,243,255,0.3)] transition-all';
-            el.innerHTML = `<i class="ph-fill ${icon} text-neon-blue text-xl"></i> <span class="text-xs font-bold text-white tracking-widest uppercase">${msg}</span>`;
+            el.className = 'glass-panel px-4 py-3 flex items-center gap-3 transition-all border border-[var(--theme-primary)]/50';
+            el.innerHTML = `<i class="ph-fill ${icon} text-[var(--theme-primary)] text-xl"></i> <span class="text-sm font-medium text-white">${msg}</span>`;
             
             el.style.animation = 'slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
             zone.appendChild(el);
@@ -848,36 +782,36 @@
             }, 3000);
         }
 
-        // --- 6. SHOP & INVENTORY MODES ---
+        // --- 6. SHOP & INVENTORY ---
         function openShop() {
             const c = document.getElementById('shopItemsContainer');
             c.innerHTML = '';
             
             SHOP_ITEMS.forEach(item => {
-                let actionText = `${item.cost} CR`;
+                let actionText = `${item.cost} Coins`;
                 let isOwned = false;
 
                 if (item.type === 'permanent') {
                     if (state.unlockedThemes.includes(item.theme)) {
-                        actionText = 'EQUIPPED';
+                        actionText = 'Equipped';
                         isOwned = true;
                     }
                 }
 
                 const btnHtml = (item.type === 'permanent' && isOwned && state.theme === item.theme) 
-                    ? `<button disabled class="px-3 py-1 bg-gray-800 text-gray-500 text-xs font-bold font-mono rounded border border-gray-700 uppercase">EQUIPPED</button>`
-                    : `<button onclick="buyItem('${item.id}')" class="px-3 py-1 bg-black text-neon-yellow hover:bg-neon-yellow hover:text-black text-xs font-bold font-mono rounded border border-neon-yellow transition-colors uppercase btn-interact">${actionText}</button>`;
+                    ? `<button disabled class="px-3 py-1.5 bg-gray-800 text-gray-400 text-xs font-semibold rounded-lg border border-gray-700">Equipped</button>`
+                    : `<button onclick="buyItem('${item.id}')" class="px-3 py-1.5 bg-black text-[#fcee0a] hover:bg-[#fcee0a] hover:text-black text-xs font-semibold rounded-lg border border-[#fcee0a] transition-colors btn-interact">${actionText}</button>`;
 
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between p-3 bg-black/50 border border-gray-800 rounded hover:border-gray-600 transition-colors";
+                div.className = "flex items-center justify-between p-3 bg-black/40 border border-gray-800 rounded-xl hover:border-gray-600 transition-colors";
                 div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded border border-gray-700 bg-black flex items-center justify-center shrink-0">
+                    <div class="flex items-center gap-3 pr-2">
+                        <div class="w-10 h-10 rounded-lg border border-gray-700 bg-black/50 flex items-center justify-center shrink-0">
                             <i class="ph-fill ${item.icon} text-2xl ${item.color}"></i>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-sm font-bold text-white tracking-wider uppercase">${item.name}</span>
-                            <span class="text-[10px] text-gray-400 font-mono">${item.desc}</span>
+                            <span class="text-sm font-bold text-gray-100">${item.name}</span>
+                            <span class="text-[10px] text-gray-400 mt-0.5 leading-tight">${item.desc}</span>
                         </div>
                     </div>
                     ${btnHtml}
@@ -897,7 +831,7 @@
             if (item.type === 'permanent') {
                 if(state.unlockedThemes.includes(item.theme)) {
                     applyTheme(item.theme);
-                    showToast("Theme Overwritten.", "ph-check");
+                    showToast("Theme Applied.", "ph-check");
                     openShop();
                     return;
                 }
@@ -909,35 +843,34 @@
 
                 if (item.type === 'buff') {
                     state.inventory[id] = (state.inventory[id] || 0) + 1;
-                    showToast(`Acquired: ${item.name}. Added to Stash.`, "ph-backpack");
+                    showToast(`Acquired: ${item.name}. Added to Inventory.`, "ph-backpack");
                 } 
                 else if (item.type === 'instant') {
                     if(item.id === 'auto_repair') {
-                        const target = state.tasks.find(t => t.category === 'System');
+                        const target = state.tasks.find(t => t.category === 'Daily');
                         if(target) {
                             removeTask(target.id);
-                            showToast("Auto-Repair: Clutter cleared.", "ph-robot");
+                            showToast("Task Skipper: Task cleared.", "ph-magic-wand");
                         } else {
-                            // refund
                             state.coins += item.cost;
-                            showToast("No System tasks to clear. Refunded.", "ph-warning-circle");
+                            showToast("No Daily tasks to clear. Refunded.", "ph-warning-circle");
                         }
                     } else if (item.id === 'game_battery') {
-                        state.gameSeconds += 3600; // 1 hour
+                        state.gameSeconds += 3600; 
                         if(state.isTimerActive) state.endTime += 3600000;
-                        showToast("Game Battery Applied. +1 Hour.", "ph-game-controller");
+                        showToast("Timer Extension Applied. +1 Hour.", "ph-hourglass-high");
                     }
                 } 
                 else if (item.type === 'permanent') {
                     state.unlockedThemes.push(item.theme);
                     applyTheme(item.theme);
-                    showToast("New Matrix Interface Unlocked.", "ph-paint-brush");
+                    showToast("New Theme Unlocked.", "ph-paint-brush");
                 }
 
                 updateUI(); saveState(); openShop();
             } else {
                 SOUNDS.error.play();
-                showToast("Insufficient Credits.", "ph-warning");
+                showToast("Not enough Coins.", "ph-warning");
             }
         }
 
@@ -954,31 +887,31 @@
                     hasItems = true;
                     const item = SHOP_ITEMS.find(x => x.id === id);
                     const isActive = isModuleActive(id);
-                    const btnText = isActive ? 'ACTIVE' : 'ACTIVATE';
-                    const btnClass = isActive ? 'bg-gray-800 text-gray-500 border-gray-700' : 'bg-black text-neon-purple hover:bg-neon-purple hover:text-black border-neon-purple btn-interact';
+                    const btnText = isActive ? 'Active' : 'Use';
+                    const btnClass = isActive ? 'bg-gray-800 text-gray-400 border-gray-700' : 'bg-black text-[#bc13fe] hover:bg-[#bc13fe] hover:text-black border-[#bc13fe] btn-interact';
                     const onclick = isActive ? '' : `onclick="activateItem('${item.id}')"`;
 
                     const div = document.createElement('div');
-                    div.className = "flex items-center justify-between p-3 bg-black/50 border border-gray-800 rounded hover:border-gray-600 transition-colors";
+                    div.className = "flex items-center justify-between p-3 bg-black/40 border border-gray-800 rounded-xl hover:border-gray-600 transition-colors";
                     div.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded border border-gray-700 bg-black flex items-center justify-center shrink-0 relative">
+                        <div class="flex items-center gap-3 pr-2">
+                            <div class="w-10 h-10 rounded-lg border border-gray-700 bg-black/50 flex items-center justify-center shrink-0 relative">
                                 <i class="ph-fill ${item.icon} text-2xl ${item.color}"></i>
-                                <span class="absolute -top-2 -right-2 bg-neon-purple text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full">${count}</span>
+                                <span class="absolute -top-1.5 -right-1.5 bg-[#bc13fe] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">${count}</span>
                             </div>
                             <div class="flex flex-col">
-                                <span class="text-sm font-bold text-white tracking-wider uppercase">${item.name}</span>
-                                <span class="text-[10px] text-gray-400 font-mono">${item.desc}</span>
+                                <span class="text-sm font-bold text-gray-100">${item.name}</span>
+                                <span class="text-[10px] text-gray-400 mt-0.5 leading-tight">${item.desc}</span>
                             </div>
                         </div>
-                        <button ${onclick} ${isActive ? 'disabled' : ''} class="px-3 py-1 text-xs font-bold font-mono rounded border transition-colors uppercase ${btnClass}">${btnText}</button>
+                        <button ${onclick} ${isActive ? 'disabled' : ''} class="px-4 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${btnClass}">${btnText}</button>
                     `;
                     c.appendChild(div);
                 }
             });
 
             if (!hasItems) {
-                c.innerHTML = `<p class="text-center text-gray-500 font-mono text-sm py-8 uppercase tracking-widest border border-dashed border-gray-800 rounded">Stash Empty</p>`;
+                c.innerHTML = `<p class="text-center text-gray-500 text-sm py-8 border border-dashed border-gray-800 rounded-xl">Inventory Empty</p>`;
             }
 
             document.getElementById('inventoryModal').classList.remove('hidden');
@@ -993,33 +926,31 @@
             const item = SHOP_ITEMS.find(x => x.id === id);
             
             if (isModuleActive(id)) {
-                showToast("Module is already active.", "ph-warning");
+                showToast("Boost is already active.", "ph-warning");
                 return;
             }
 
-            // Remove from inventory
             state.inventory[id]--;
             if(state.inventory[id] === 0) delete state.inventory[id];
 
-            // Add to active modules
             if(state.activeModules.length >= 3) {
-                state.activeModules.shift(); // remove oldest
+                state.activeModules.shift(); 
             }
             const expiresAt = Date.now() + (item.duration * 3600000);
             state.activeModules.push({ id, expiresAt });
 
             SOUNDS.add.play();
-            showToast(`Activated: ${item.name}`, "ph-cpu");
+            showToast(`Activated: ${item.name}`, "ph-lightning");
             
             renderModuleSlots();
             updateUI();
             saveState();
-            openInventory(); // Refresh view
+            openInventory(); 
         }
 
         function applyTheme(themeClass) {
             state.theme = themeClass;
-            document.body.className = `flex flex-col items-center min-h-screen pb-32 ${themeClass === 'default' ? '' : themeClass}`;
+            document.body.className = `flex flex-col items-center min-h-screen pb-[env(safe-area-inset-bottom,6rem)] ${themeClass === 'default' ? '' : themeClass}`;
             saveState();
         }
 
@@ -1030,11 +961,11 @@
                 state.gameSeconds += 3600; 
                 if(state.isTimerActive) state.endTime += 3600000;
                 SOUNDS.add.play();
-                showToast("Boost Key Used: +1 Hour focus time.", "ph-lightning");
+                showToast("Boost Used: +1 Hour focus time.", "ph-lightning");
                 updateUI(); saveState();
             } else {
                 SOUNDS.error.play();
-                showToast("No Boost Keys Available.", "ph-warning-circle");
+                showToast("No Boosts Available. Level up to earn more!", "ph-warning-circle");
             }
         }
 
@@ -1045,21 +976,21 @@
             if (!state.isTimerActive) {
                 if (state.gameSeconds <= 0) {
                     SOUNDS.error.play();
-                    showToast("Zero focus energy. Acquire a Battery or Boost.", "ph-clock");
+                    showToast("No focus time left. Get a Timer Extension or use a Boost.", "ph-clock");
                     return;
                 }
                 state.isTimerActive = true;
                 state.endTime = Date.now() + (state.gameSeconds * 1000);
                 btn.classList.add('active');
                 icon.className = "ph-fill ph-pause";
-                showToast("Overclock Focus Engaged.", "ph-play");
+                showToast("Focus Timer Started.", "ph-play");
             } else {
                 state.isTimerActive = false;
                 state.gameSeconds = Math.max(0, Math.floor((state.endTime - Date.now()) / 1000));
                 state.endTime = null;
                 btn.classList.remove('active');
-                icon.className = "ph-fill ph-power";
-                showToast("Overclock Paused.", "ph-pause");
+                icon.className = "ph-fill ph-play";
+                showToast("Timer Paused.", "ph-pause");
             }
             updateAiStatus();
             saveState();
@@ -1073,11 +1004,11 @@
                     state.isTimerActive = false;
                     state.gameSeconds = 0;
                     document.getElementById('timerBtn').classList.remove('active');
-                    document.getElementById('timerIcon').className = "ph-fill ph-power";
-                    showToast("Focus Cycle Complete.", "ph-check-circle");
+                    document.getElementById('timerIcon').className = "ph-fill ph-play";
+                    showToast("Timer Finished.", "ph-check-circle");
                     updateAiStatus();
                     if("Notification" in window && Notification.permission === "granted") {
-                        new Notification("Nexus AI", { body: "Focus Session Over. System normal." });
+                        new Notification("Questify Assistant", { body: "Focus Session Over. Great job!" });
                     }
                 }
             }
@@ -1088,7 +1019,7 @@
             document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
         }, 1000);
 
-        // --- 8. DATA MGMT & RESET PROTOCOL ---
+        // --- 8. DATA MGMT & RESET ---
         function saveState() {
             localStorage.setItem('questify_nexus_data', JSON.stringify(state));
         }
@@ -1096,8 +1027,7 @@
         function checkCommands(input) {
             if(input.value.trim().toLowerCase() === 'reset') {
                 input.value = '';
-                document.body.classList.add('glitch-anim');
-                showToast("CRITICAL WARNING: RESET PROTOCOL INITIATED.", "ph-warning");
+                showToast("Resetting all data...", "ph-warning");
                 setTimeout(systemPurge, 1500);
             }
         }
@@ -1107,7 +1037,7 @@
             location.reload();
         }
 
-        // --- 9. 3D BACKGROUND (AMBIENT HYPERSPACE) ---
+        // --- 9. 3D BACKGROUND (Ambient Floating Particles) ---
         const isMobile = window.innerWidth < 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -1116,13 +1046,13 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 2));
 
         const particles = new THREE.BufferGeometry();
-        const count = isMobile ? 300 : 1000;
+        const count = isMobile ? 250 : 800;
         const posArray = new Float32Array(count * 3);
         for(let i=0; i < count*3; i++) {
             posArray[i] = (Math.random() - 0.5) * 15;
         }
         particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const material = new THREE.PointsMaterial({ size: 0.02, color: 0x00f3ff, transparent: true, opacity: 0.5 });
+        const material = new THREE.PointsMaterial({ size: 0.02, color: 0x00f3ff, transparent: true, opacity: 0.4 });
         const particleMesh = new THREE.Points(particles, material);
         scene.add(particleMesh);
         camera.position.z = 3;
@@ -1130,21 +1060,18 @@
         function animateBg() {
             requestAnimationFrame(animateBg);
             
-            // Dynamic color based on theme
             if(state.theme === 'theme-matrix') material.color.setHex(0x00ff41);
             else if(state.theme === 'theme-crimson') material.color.setHex(0xff003c);
             else material.color.setHex(0x00f3ff);
 
             if(state.isTimerActive) {
-                // Overclock Warp
-                particleMesh.rotation.z += 0.005;
-                particleMesh.position.z += 0.05;
-                if(particleMesh.position.z > 5) particleMesh.position.z = 0;
+                // Slightly faster calm floating
+                particleMesh.rotation.y += 0.002;
+                particleMesh.rotation.x += 0.001;
             } else {
-                // Standard Drift
-                particleMesh.rotation.y += 0.001;
-                particleMesh.rotation.x += 0.0005;
-                particleMesh.position.z = 0;
+                // Calm floating
+                particleMesh.rotation.y += 0.0005;
+                particleMesh.rotation.x += 0.0003;
             }
             
             renderer.render(scene, camera);
